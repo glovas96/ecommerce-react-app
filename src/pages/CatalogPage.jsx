@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getProducts } from "../api";
 
 const CatalogPage = () => {
@@ -17,7 +18,10 @@ const CatalogPage = () => {
             {/* Render product list */}
             <ul>
                 {products.map((p) => (
-                    <li key={p.id}>{p.title}</li>
+                    <li key={p.id}>
+                        {/* Link to product details page */}
+                        <Link to={`/product/${p.id}`}>{p.title}</Link>
+                    </li>
                 ))}
             </ul>
         </div>
@@ -25,4 +29,3 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
-
