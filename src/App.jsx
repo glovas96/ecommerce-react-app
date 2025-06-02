@@ -9,6 +9,10 @@ import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrdersPage from "./pages/OrdersPage";
+
 const App = () => {
     const { user } = useAuth(); // current user
 
@@ -43,6 +47,25 @@ const App = () => {
                 {/* Auth pages */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+
+                {/* Protected routes */}
+                <Route
+                    path="/checkout"
+                    element={
+                        <ProtectedRoute>
+                            <CheckoutPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/orders"
+                    element={
+                        <ProtectedRoute>
+                            <OrdersPage />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </>
     );
