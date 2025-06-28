@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../features/cart/cartSlice";
 
+// MUI components
+import { Box, Typography, Button } from "@mui/material";
+
 const ProductPage = () => {
     // Get product ID from URL
     const { id } = useParams();
@@ -33,17 +36,27 @@ const ProductPage = () => {
     };
 
     // Show loading state
-    if (!product) return <div>Loading...</div>;
+    if (!product) return <Typography>Loading...</Typography>;
 
     return (
-        <div>
-            <h1>{product.title}</h1>
-            <p>Price: {product.price} $</p>
-            <img src={product.thumbnail} width={200} />
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+                {product.title}
+            </Typography>
+
+            <Typography variant="h6" color="primary" gutterBottom>
+                Price: {product.price} $
+            </Typography>
+
+            <Box sx={{ my: 2 }}>
+                <img src={product.thumbnail} width={200} />
+            </Box>
 
             {/* Add to cart button */}
-            <button onClick={handleAdd}>Add to cart</button>
-        </div>
+            <Button variant="contained" size="large" onClick={handleAdd}>
+                Add to cart
+            </Button>
+        </Box>
     );
 };
 
