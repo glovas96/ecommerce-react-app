@@ -8,6 +8,9 @@ import {
     removeFromCart,
 } from "../features/cart/cartSlice";
 
+// MUI components
+import { Box, Typography, Button, TextField } from "@mui/material";
+
 const CartPage = () => {
     // Read cart data from Redux
     const items = useSelector(selectCartItems);
@@ -15,20 +18,40 @@ const CartPage = () => {
     const dispatch = useDispatch();
 
     // Empty cart state
-    if (!items.length) return <div>Cart is empty</div>;
+    if (!items.length)
+        return (
+            <Typography sx={{ p: 3 }} variant="h6">
+                Cart is empty
+            </Typography>
+        );
 
     return (
-        <div>
-            <h1>Cart</h1>
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+                Cart
+            </Typography>
 
             {/* Cart items list */}
-            <ul>
+            <Box component="ul" sx={{ pl: 2 }}>
                 {items.map((item) => (
-                    <li key={item.id}>
+                    <Box component="li" key={item.id} sx={{ mb: 2 }}>
                         {item.title} — {item.price} $ ×
-                        <input
+
+                        {/* Quantity input (same height as small button) */}
+                        <TextField
                             type="number"
-                            min={1}
+                            size="small"
+                            sx={{
+                                width: 80,
+                                mx: 1,
+                                "& .MuiInputBase-root": {
+                                    height: 32,
+                                },
+                                "& input": {
+                                    padding: "0 8px",
+                                },
+                            }}
+                            inputProps={{ min: 1 }}
                             value={item.quantity}
                             onChange={(e) =>
                                 dispatch(
@@ -39,16 +62,25 @@ const CartPage = () => {
                                 )
                             }
                         />
-                        <button onClick={() => dispatch(removeFromCart(item.id))}>
+
+                        {/* Remove button */}
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() => dispatch(removeFromCart(item.id))}
+                        >
                             Remove
-                        </button>
-                    </li>
+                        </Button>
+                    </Box>
                 ))}
-            </ul>
+            </Box>
 
             {/* Total price */}
-            <h2>Total: {total} $</h2>
-        </div>
+            <Typography variant="h5" sx={{ mt: 3 }}>
+                Total: {total} $
+            </Typography>
+        </Box>
     );
 };
 
