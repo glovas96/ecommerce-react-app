@@ -3,6 +3,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 
+import { Box, TextField, Button, Typography } from "@mui/material";
+
 const LoginPage = () => {
     const [email, setEmail] = useState(""); // email input
     const [password, setPassword] = useState(""); // password input
@@ -15,26 +17,44 @@ const LoginPage = () => {
     };
 
     return (
-        <form onSubmit={handleLogin}>
-            <h1>Login</h1>
+        <Box
+            component="form"
+            onSubmit={handleLogin}
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                width: 300,
+                mx: "auto",
+                mt: 5,
+            }}
+        >
+            <Typography variant="h4" textAlign="center">
+                Login
+            </Typography>
 
-            <input
+            <TextField
                 type="email"
-                placeholder="Email"
+                label="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                fullWidth
             />
 
-            <input
+            <TextField
                 type="password"
-                placeholder="Password"
+                label="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                fullWidth
             />
 
-            <button type="submit">Sign in</button>
-        </form>
+            <Button type="submit" variant="contained" size="large">
+                Sign in
+            </Button>
+        </Box>
     );
 };
 
 export default LoginPage;
+
