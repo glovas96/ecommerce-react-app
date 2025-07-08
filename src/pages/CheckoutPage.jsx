@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
 
+import { Box, TextField, Button, Typography } from "@mui/material";
+
 const CheckoutPage = () => {
     // Redux state
     const items = useSelector(selectCartItems);
@@ -53,50 +55,76 @@ const CheckoutPage = () => {
     };
 
     // Empty cart state
-    if (!items.length) return <div>Your cart is empty</div>;
+    if (!items.length)
+        return (
+            <Typography sx={{ p: 3 }} variant="h6">
+                Your cart is empty
+            </Typography>
+        );
 
     return (
-        <div>
-            <h1>Checkout</h1>
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+                Checkout
+            </Typography>
 
             {/* Checkout form */}
-            <form onSubmit={handleSubmit}>
-                <input
-                    placeholder="Full name"
+            <Box
+                component="form"
+                onSubmit={handleSubmit}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    width: 350,
+                    mt: 2,
+                }}
+            >
+                <TextField
+                    label="Full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    fullWidth
                 />
 
-                <input
-                    placeholder="Phone"
+                <TextField
+                    label="Phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    fullWidth
                 />
 
-                <input
-                    placeholder="City"
+                <TextField
+                    label="City"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
+                    fullWidth
                 />
 
-                <input
-                    placeholder="Street"
+                <TextField
+                    label="Street"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
+                    fullWidth
                 />
 
-                <input
-                    placeholder="ZIP code"
+                <TextField
+                    label="ZIP code"
                     value={zip}
                     onChange={(e) => setZip(e.target.value)}
+                    fullWidth
                 />
 
-                <button type="submit">Place order</button>
-            </form>
+                <Button type="submit" variant="contained" size="large">
+                    Place order
+                </Button>
+            </Box>
 
             {/* Order total */}
-            <h2>Total: {total} $</h2>
-        </div>
+            <Typography variant="h5" sx={{ mt: 3 }}>
+                Total: {total} $
+            </Typography>
+        </Box>
     );
 };
 
