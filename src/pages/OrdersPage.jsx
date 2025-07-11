@@ -3,6 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
+import { Box, Typography, List, ListItem } from "@mui/material";
+
 const OrdersPage = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);
@@ -33,20 +35,27 @@ const OrdersPage = () => {
     }, [user]);
 
     // Empty state
-    if (!orders.length) return <div>You have no orders yet</div>;
+    if (!orders.length)
+        return (
+            <Typography sx={{ p: 3 }} variant="h6">
+                You have no orders yet
+            </Typography>
+        );
 
     return (
-        <div>
-            <h1>My Orders</h1>
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+                My Orders
+            </Typography>
 
-            <ul>
+            <List>
                 {orders.map((o) => (
-                    <li key={o.id}>
+                    <ListItem key={o.id} sx={{ px: 0 }}>
                         Order #{o.id} — {o.total} ₽ — status: {o.status}
-                    </li>
+                    </ListItem>
                 ))}
-            </ul>
-        </div>
+            </List>
+        </Box>
     );
 };
 
