@@ -1,7 +1,5 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase/config";
 
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
@@ -13,29 +11,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
 
+import Navigation from "./components/Navigation";
+
 const App = () => {
     const { user } = useAuth(); // current user
 
     return (
         <>
-            {/* Navigation */}
-            <nav>
-                <Link to="/">Home</Link>
-                <Link to="/catalog">Catalog</Link>
-                <Link to="/cart">Cart</Link>
-
-                {user ? (
-                    <>
-                        <span>{user.email}</span>
-                        <button onClick={() => signOut(auth)}>Logout</button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login">Login</Link>
-                        <Link to="/register">Register</Link>
-                    </>
-                )}
-            </nav>
+            {/* MUI Navigation */}
+            <Navigation />
 
             {/* Routes */}
             <Routes>
