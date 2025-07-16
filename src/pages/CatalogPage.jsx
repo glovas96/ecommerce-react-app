@@ -2,16 +2,37 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProducts } from "../api";
 
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Skeleton } from "@mui/material";
 
 const CatalogPage = () => {
     // Local state for storing loaded products
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState(null);
 
     useEffect(() => {
         // Fetch products on component mount
         getProducts().then(setProducts);
     }, []);
+
+    // Skeleton loading state
+    if (!products)
+        return (
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h4" gutterBottom>
+                    Catalog
+                </Typography>
+
+                {/* Render skeleton list while loading */}
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton
+                        key={i}
+                        variant="text"
+                        width={300}
+                        height={32}
+                        sx={{ my: 1 }}
+                    />
+                ))}
+            </Box>
+        );
 
     return (
         <Box sx={{ p: 3 }}>
@@ -40,3 +61,5 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
+
+
