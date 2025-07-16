@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../features/cart/cartSlice";
 
-// MUI components
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Skeleton } from "@mui/material";
 
 const ProductPage = () => {
     // Get product ID from URL
@@ -36,7 +35,32 @@ const ProductPage = () => {
     };
 
     // Show loading state
-    if (!product) return <Typography>Loading...</Typography>;
+    if (!product)
+        return (
+            <Box sx={{ p: 3 }}>
+                {/* Skeleton title */}
+                <Skeleton variant="text" width={300} height={40} />
+
+                {/* Skeleton image */}
+                <Skeleton
+                    variant="rectangular"
+                    width={250}
+                    height={250}
+                    sx={{ my: 2 }}
+                />
+
+                {/* Skeleton price */}
+                <Skeleton variant="text" width={150} height={32} />
+
+                {/* Skeleton button */}
+                <Skeleton
+                    variant="rounded"
+                    width={180}
+                    height={48}
+                    sx={{ mt: 2 }}
+                />
+            </Box>
+        );
 
     return (
         <Box sx={{ p: 3 }}>
