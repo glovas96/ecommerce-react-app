@@ -3,11 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-import { Box, Typography, List, ListItem } from "@mui/material";
+import { Box, Typography, List, ListItem, Skeleton } from "@mui/material";
 
 const OrdersPage = () => {
     const { user } = useAuth();
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState(null);
 
     // Load user orders from Firestore
     useEffect(() => {
@@ -33,6 +33,27 @@ const OrdersPage = () => {
 
         loadOrders();
     }, [user]);
+
+    // Show loading state
+    if (!orders)
+        return (
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h4" gutterBottom>
+                    My Orders
+                </Typography>
+
+                {/* Skeleton list while loading */}
+                {[1, 2, 3].map((i) => (
+                    <Skeleton
+                        key={i}
+                        variant="text"
+                        width={350}
+                        height={32}
+                        sx={{ my: 1 }}
+                    />
+                ))}
+            </Box>
+        );
 
     // Empty state
     if (!orders.length)
