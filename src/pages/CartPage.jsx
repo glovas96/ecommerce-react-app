@@ -8,8 +8,8 @@ import {
     removeFromCart,
 } from "../features/cart/cartSlice";
 
-// MUI components
 import { Box, Typography, Button, TextField } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const CartPage = () => {
     // Read cart data from Redux
@@ -20,9 +20,24 @@ const CartPage = () => {
     // Empty cart state
     if (!items.length)
         return (
-            <Typography sx={{ p: 3 }} variant="h6">
-                Cart is empty
-            </Typography>
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h5" gutterBottom>
+                    Your cart is empty
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                    Add some products to see them here
+                </Typography>
+
+                <Button
+                    component={Link}
+                    to="/catalog"
+                    variant="contained"
+                    sx={{ mt: 2 }}
+                >
+                    Go to catalog
+                </Button>
+            </Box>
         );
 
     return (
