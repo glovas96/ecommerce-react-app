@@ -34,6 +34,25 @@ const CatalogPage = () => {
             </Box>
         );
 
+    // Empty state (no products)
+    if (products.length === 0)
+        return (
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h4" gutterBottom>
+                    Catalog
+                </Typography>
+
+                {/* Empty state message */}
+                <Typography variant="h6" sx={{ mt: 2 }}>
+                    No products found
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                    Try again later
+                </Typography>
+            </Box>
+        );
+
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
@@ -61,5 +80,3 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
-
-
