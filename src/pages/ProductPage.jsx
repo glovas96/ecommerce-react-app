@@ -44,8 +44,8 @@ const ProductPage = () => {
                 {/* Skeleton image */}
                 <Skeleton
                     variant="rectangular"
-                    width={250}
-                    height={250}
+                    width={350}
+                    height={350}
                     sx={{ my: 2 }}
                 />
 
@@ -62,24 +62,65 @@ const ProductPage = () => {
             </Box>
         );
 
+    // Empty state: product not found
+    if (product && product.message === "Product not found")
+        return (
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h5" gutterBottom>
+                    Product not found
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                    The product you are looking for does not exist
+                </Typography>
+
+                <Button variant="contained" sx={{ mt: 2 }} href="/catalog">
+                    Back to catalog
+                </Button>
+            </Box>
+        );
+
     return (
         <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom>
-                {product.title}
-            </Typography>
+            {/* Two-column layout */}
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 4,
+                    alignItems: "flex-start",
+                    flexWrap: "wrap",
+                }}
+            >
+                {/* Left side — big product image */}
+                <Box>
+                    <img
+                        src={product.thumbnail}
+                        width={350}
+                        style={{ borderRadius: 8 }}
+                    />
+                </Box>
 
-            <Typography variant="h6" color="primary" gutterBottom>
-                Price: {product.price} $
-            </Typography>
+                {/* Right side — title, price, description, button */}
+                <Box sx={{ maxWidth: 500 }}>
+                    <Typography variant="h4" gutterBottom>
+                        {product.title}
+                    </Typography>
 
-            <Box sx={{ my: 2 }}>
-                <img src={product.thumbnail} width={200} />
+                    <Typography variant="h6" color="primary" gutterBottom>
+                        Price: {product.price} $
+                    </Typography>
+
+                    {/* Product description */}
+                    <Typography variant="body1" sx={{ mb: 3 }}>
+                        {product.description}
+                    </Typography>
+
+                    {/* Add to cart button */}
+                    <Button variant="contained" size="large" onClick={handleAdd}>
+                        Add to cart
+                    </Button>
+                </Box>
             </Box>
-
-            {/* Add to cart button */}
-            <Button variant="contained" size="large" onClick={handleAdd}>
-                Add to cart
-            </Button>
         </Box>
     );
 };
