@@ -58,9 +58,15 @@ const OrdersPage = () => {
     // Empty state
     if (!orders.length)
         return (
-            <Typography sx={{ p: 3 }} variant="h6">
-                You have no orders yet
-            </Typography>
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h5" gutterBottom>
+                    You have no orders yet
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                    Make your first purchase to see it here
+                </Typography>
+            </Box>
         );
 
     return (
@@ -81,3 +87,4 @@ const OrdersPage = () => {
 };
 
 export default OrdersPage;
+
