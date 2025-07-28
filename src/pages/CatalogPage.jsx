@@ -1,19 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProducts } from "../api";
+import { getProducts, getCategories } from "../api";
 
-import { Box, Typography, Button, Skeleton } from "@mui/material";
+import {
+    Box,
+    Typography,
+    Button,
+    Skeleton,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+} from "@mui/material";
 
 const CatalogPage = () => {
-    // Local state for storing loaded products
     const [products, setProducts] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const [category, setCategory] = useState("");
 
+    // Load categories on initial mount
     useEffect(() => {
-        // Fetch products on component mount
-        getProducts().then(setProducts);
+        getCategories().then((cats) => {
+            setCategories(cats);
+        });
     }, []);
 
-    // Skeleton loading state
+    // Load products (all or filtered by category)
+    useEffect(() => {
+        setProducts(null); // Show skeleton while loading
+        getProducts(category).then((prods) => {
+            setProducts(prods);
+        });
+    }, [category]);
+
+    // Show skeleton while products are loading
     if (!products)
         return (
             <Box sx={{ p: 3 }}>
@@ -21,7 +41,6 @@ const CatalogPage = () => {
                     Catalog
                 </Typography>
 
-                {/* Render skeleton list while loading */}
                 {[1, 2, 3, 4, 5].map((i) => (
                     <Skeleton
                         key={i}
@@ -34,36 +53,35 @@ const CatalogPage = () => {
             </Box>
         );
 
-    // Empty state (no products)
-    if (products.length === 0)
-        return (
-            <Box sx={{ p: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    Catalog
-                </Typography>
-
-                {/* Empty state message */}
-                <Typography variant="h6" sx={{ mt: 2 }}>
-                    No products found
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary">
-                    Try again later
-                </Typography>
-            </Box>
-        );
-
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
                 Catalog
             </Typography>
 
-            {/* Render product list */}
+            {/* Category selector */}
+            <FormControl fullWidth sx={{ mb: 3 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                    value={category}
+                    label="Category"
+                    onChange={(e) => setCategory(e.target.value)}
+                >
+                    <MenuItem value="">All categories</MenuItem>
+
+                    {/* Render category list */}
+                    {categories.map((c) => (
+                        <MenuItem key={c.slug} value={c.slug}>
+                            {c.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            {/* Product list */}
             <Box component="ul" sx={{ pl: 2 }}>
                 {products.map((p) => (
                     <Box component="li" key={p.id} sx={{ mb: 1 }}>
-                        {/* Link to product details page */}
                         <Button
                             component={Link}
                             to={`/product/${p.id}`}
