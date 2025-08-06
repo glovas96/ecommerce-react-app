@@ -11,6 +11,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    TextField,
 } from "@mui/material";
 
 const CatalogPage = () => {
@@ -20,11 +21,13 @@ const CatalogPage = () => {
     // Init state from URL
     const initialCategory = searchParams.get("category") || "";
     const initialSort = searchParams.get("sort") || "";
+    const initialSearch = searchParams.get("search") || "";
 
     const [products, setProducts] = useState(null);
     const [categories, setCategories] = useState([]);
     const [category, setCategory] = useState(initialCategory);
     const [sort, setSort] = useState(initialSort);
+    const [search, setSearch] = useState(initialSearch);
 
     // Load categories on initial mount
     useEffect(() => {
@@ -63,8 +66,26 @@ const CatalogPage = () => {
         setSearchParams(params);
     };
 
+    // --- Update URL when search changes (sync UI → URL)
+    const handleSearchChange = (value) => {
+        setSearch(value);
+
+        const params = new URLSearchParams(searchParams);
+        if (value) params.set("search", value);
+        else params.delete("search");
+
+        setSearchParams(params);
+    };
+
+    // --- Apply search filter (client-side)
+    const filteredProducts = products
+        ? products.filter((p) =>
+            p.title.toLowerCase().includes(search.toLowerCase())
+        )
+        : [];
+
     // --- Sorting logic (client-side sorting)
-    const sortedProducts = products ? [...products] : [];
+    const sortedProducts = [...filteredProducts];
 
     if (sort === "price_asc") sortedProducts.sort((a, b) => a.price - b.price);
     if (sort === "price_desc") sortedProducts.sort((a, b) => b.price - a.price);
@@ -101,6 +122,15 @@ const CatalogPage = () => {
             <Typography variant="h4" gutterBottom>
                 Catalog
             </Typography>
+
+            {/* Search input */}
+            <TextField
+                fullWidth
+                label="Search"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                sx={{ mb: 3 }}
+            />
 
             {/* Category selector */}
             <FormControl fullWidth sx={{ mb: 3 }}>
