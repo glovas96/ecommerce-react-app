@@ -22,12 +22,16 @@ const CatalogPage = () => {
     const initialCategory = searchParams.get("category") || "";
     const initialSort = searchParams.get("sort") || "";
     const initialSearch = searchParams.get("search") || "";
+    const initialPage = Number(searchParams.get("page")) || 1;
 
     const [products, setProducts] = useState(null);
     const [categories, setCategories] = useState([]);
     const [category, setCategory] = useState(initialCategory);
     const [sort, setSort] = useState(initialSort);
     const [search, setSearch] = useState(initialSearch);
+    const [page, setPage] = useState(initialPage);
+
+    const ITEMS_PER_PAGE = 20;
 
     // Load categories on initial mount
     useEffect(() => {
@@ -47,33 +51,48 @@ const CatalogPage = () => {
     // --- Update URL when category changes (sync UI → URL)
     const handleCategoryChange = (value) => {
         setCategory(value);
+        setPage(1); // reset page
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("category", value);
         else params.delete("category");
 
+        params.set("page", 1);
         setSearchParams(params);
     };
 
     // --- Update URL when sort changes (sync UI → URL)
     const handleSortChange = (value) => {
         setSort(value);
+        setPage(1); // reset page
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("sort", value);
         else params.delete("sort");
 
+        params.set("page", 1);
         setSearchParams(params);
     };
 
     // --- Update URL when search changes (sync UI → URL)
     const handleSearchChange = (value) => {
         setSearch(value);
+        setPage(1); // reset page
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("search", value);
         else params.delete("search");
 
+        params.set("page", 1);
+        setSearchParams(params);
+    };
+
+    // --- Update URL when page changes (sync UI → URL)
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+
+        const params = new URLSearchParams(searchParams);
+        params.set("page", newPage);
         setSearchParams(params);
     };
 
@@ -96,6 +115,15 @@ const CatalogPage = () => {
         sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
     if (sort === "alpha_desc")
         sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+
+    // --- Pagination logic (client-side)
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const paginatedProducts = sortedProducts.slice(
+        startIndex,
+        startIndex + ITEMS_PER_PAGE
+    );
+
+    const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
 
     // Show skeleton while products are loading
     if (!products)
@@ -171,7 +199,7 @@ const CatalogPage = () => {
 
             {/* Product list */}
             <Box component="ul" sx={{ pl: 2 }}>
-                {sortedProducts.map((p) => (
+                {paginatedProducts.map((p) => (
                     <Box component="li" key={p.id} sx={{ mb: 1 }}>
                         <Button
                             component={Link}
@@ -184,8 +212,32 @@ const CatalogPage = () => {
                     </Box>
                 ))}
             </Box>
+
+            {/* Pagination controls */}
+            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+                <Button
+                    variant="outlined"
+                    disabled={page === 1}
+                    onClick={() => handlePageChange(page - 1)}
+                >
+                    Prev
+                </Button>
+
+                <Typography sx={{ alignSelf: "center" }}>
+                    Page {page} / {totalPages}
+                </Typography>
+
+                <Button
+                    variant="outlined"
+                    disabled={page === totalPages}
+                    onClick={() => handlePageChange(page + 1)}
+                >
+                    Next
+                </Button>
+            </Box>
         </Box>
     );
 };
 
 export default CatalogPage;
+
