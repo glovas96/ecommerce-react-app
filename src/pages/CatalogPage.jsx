@@ -12,6 +12,10 @@ import {
     Select,
     MenuItem,
     TextField,
+    Card,
+    CardContent,
+    CardMedia,
+    CardActions,
 } from "@mui/material";
 
 const CatalogPage = () => {
@@ -51,7 +55,7 @@ const CatalogPage = () => {
     // --- Update URL when category changes (sync UI → URL)
     const handleCategoryChange = (value) => {
         setCategory(value);
-        setPage(1); // reset page
+        setPage(1);
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("category", value);
@@ -64,7 +68,7 @@ const CatalogPage = () => {
     // --- Update URL when sort changes (sync UI → URL)
     const handleSortChange = (value) => {
         setSort(value);
-        setPage(1); // reset page
+        setPage(1);
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("sort", value);
@@ -77,7 +81,7 @@ const CatalogPage = () => {
     // --- Update URL when search changes (sync UI → URL)
     const handleSearchChange = (value) => {
         setSearch(value);
-        setPage(1); // reset page
+        setPage(1);
 
         const params = new URLSearchParams(searchParams);
         if (value) params.set("search", value);
@@ -136,10 +140,10 @@ const CatalogPage = () => {
                 {[1, 2, 3, 4, 5].map((i) => (
                     <Skeleton
                         key={i}
-                        variant="text"
-                        width={300}
-                        height={32}
-                        sx={{ my: 1 }}
+                        variant="rectangular"
+                        width="100%"
+                        height={200}
+                        sx={{ my: 2 }}
                     />
                 ))}
             </Box>
@@ -197,19 +201,68 @@ const CatalogPage = () => {
                 </Select>
             </FormControl>
 
-            {/* Product list */}
-            <Box component="ul" sx={{ pl: 2 }}>
+            {/* Product cards grid (CSS Grid for equal width) */}
+            <Box
+                sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                    gap: 3,
+                }}
+            >
                 {paginatedProducts.map((p) => (
-                    <Box component="li" key={p.id} sx={{ mb: 1 }}>
-                        <Button
-                            component={Link}
-                            to={`/product/${p.id}`}
-                            variant="text"
-                            sx={{ p: 0, minWidth: "auto" }}
-                        >
-                            {p.title}
-                        </Button>
-                    </Box>
+                    <Card
+                        key={p.id}
+                        sx={{
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "100%",
+                        }}
+                    >
+                        {/* Product image */}
+                        <CardMedia
+                            component="img"
+                            image={p.thumbnail}
+                            alt={p.title}
+                            sx={{
+                                height: 180,
+                                width: "100%",
+                                objectFit: "contain",      // show full image
+                                backgroundColor: "#f5f5f5", // neutral bg
+                            }}
+                        />
+
+                        <CardContent sx={{ flexGrow: 1 }}>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                    lineHeight: 1.2,       // compact spacing
+                                    minHeight: "2.4em",    // exact height for 2 lines
+                                    mb: 1,                 // spacing under title
+                                }}
+                            >
+                                {p.title}
+                            </Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                                ${p.price}
+                            </Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                                Rating: {p.rating}
+                            </Typography>
+                        </CardContent>
+
+                        <CardActions>
+                            <Button component={Link} to={`/product/${p.id}`} size="small">
+                                View
+                            </Button>
+                        </CardActions>
+                    </Card>
                 ))}
             </Box>
 
