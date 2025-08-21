@@ -4,16 +4,16 @@ import { auth } from "../firebase/config";
 
 export const useAuthListener = () => {
     const [user, setUser] = useState(null); // current authenticated user
-    const [loading, setLoading] = useState(true); // auth state loading flag
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // subscribe to Firebase Auth state changes
         const unsub = onAuthStateChanged(auth, (firebaseUser) => {
             setUser(firebaseUser ?? null); // set user or null
-            setLoading(false); // auth state resolved
+            setLoading(false);
         });
 
-        return () => unsub(); // cleanup subscription
+        return () => unsub();
     }, []);
 
     return { user, loading }; // expose user and loading state

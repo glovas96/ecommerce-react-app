@@ -1,14 +1,15 @@
 import { createContext, useContext } from "react";
 import { useAuthListener } from "../hooks/useAuthListener";
 
-const AuthContext = createContext(null); // global auth context
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const value = useAuthListener(); // get user + loading from listener
 
     return (
         <AuthContext.Provider value={value}>
-            {children} {/* provide auth state to all components */}
+            {/* provide auth state to all components */}
+            {children}
         </AuthContext.Provider>
     );
 };

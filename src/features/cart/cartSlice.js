@@ -1,8 +1,10 @@
-// Cart slice: handles cart logic
 import { createSlice } from "@reduxjs/toolkit";
 
+// Load cart from localStorage on app start
+const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+
 const initialState = {
-    items: [], // {id, title, price, quantity, thumbnail}
+    items: savedCart, // {id, title, price, quantity, thumbnail}
 };
 
 const cartSlice = createSlice({
@@ -19,11 +21,17 @@ const cartSlice = createSlice({
             } else {
                 state.items.push({ ...item, quantity: 1 });
             }
+
+            // Persist cart to localStorage
+            localStorage.setItem("cart", JSON.stringify(state.items));
         },
 
         // Remove product by ID
         removeFromCart(state, action) {
             state.items = state.items.filter((i) => i.id !== action.payload);
+
+            // Persist cart to localStorage
+            localStorage.setItem("cart", JSON.stringify(state.items));
         },
 
         // Update quantity
@@ -34,11 +42,17 @@ const cartSlice = createSlice({
             if (item && quantity > 0) {
                 item.quantity = quantity;
             }
+
+            // Persist cart to localStorage
+            localStorage.setItem("cart", JSON.stringify(state.items));
         },
 
         // Clear entire cart
         clearCart(state) {
             state.items = [];
+
+            // Persist cart to localStorage
+            localStorage.setItem("cart", JSON.stringify(state.items));
         },
     },
 });
