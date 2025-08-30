@@ -1,16 +1,30 @@
 import { AppBar, Toolbar, Typography, Button, Box, Badge } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems } from "../features/cart/selectors";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { setCart } from "../features/cart/cartSlice";
 
 const Navigation = () => {
     const { user } = useAuth();
     const items = useSelector(selectCartItems);
+    const dispatch = useDispatch();
 
     const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+    // Handle logout: clear Redux + localStorage + Firebase session
+    const handleLogout = async () => {
+        // Reset Redux cart
+        dispatch(setCart([]));
+
+        // Clear guest cart storage
+        localStorage.removeItem("cart");
+
+        // Sign out from Firebase Auth
+        await signOut(auth);
+    };
 
     return (
         <AppBar position="static">
@@ -50,7 +64,7 @@ const Navigation = () => {
 
                     {user && (
                         <>
-                            {/* Email aligned perfectly with buttons */}
+                            {/* Display user email */}
                             <Box
                                 sx={{
                                     mx: 1,
@@ -62,7 +76,8 @@ const Navigation = () => {
                                 {user.email}
                             </Box>
 
-                            <Button color="inherit" onClick={() => signOut(auth)}>
+                            {/* Logout button */}
+                            <Button color="inherit" onClick={handleLogout}>
                                 Logout
                             </Button>
                         </>
