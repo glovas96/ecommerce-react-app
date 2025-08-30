@@ -17,7 +17,7 @@ const CartPage = () => {
     const total = useSelector(selectCartTotal);
     const dispatch = useDispatch();
 
-    // Empty cart state
+    // If cart is empty — show empty state
     if (!items.length)
         return (
             <Box sx={{ p: 3 }}>
@@ -29,6 +29,7 @@ const CartPage = () => {
                     Add some products to see them here
                 </Typography>
 
+                {/* Button to go back to catalog */}
                 <Button
                     component={Link}
                     to="/catalog"
@@ -42,6 +43,7 @@ const CartPage = () => {
 
     return (
         <Box sx={{ p: 3 }}>
+            {/* Page title */}
             <Typography variant="h4" gutterBottom>
                 Cart
             </Typography>
@@ -50,9 +52,10 @@ const CartPage = () => {
             <Box component="ul" sx={{ pl: 2 }}>
                 {items.map((item) => (
                     <Box component="li" key={item.id} sx={{ mb: 2 }}>
+                        {/* Product title and price */}
                         {item.title} — {item.price} $ ×
 
-                        {/* Quantity input (same height as small button) */}
+                        {/* Quantity input */}
                         <TextField
                             type="number"
                             size="small"
@@ -78,7 +81,7 @@ const CartPage = () => {
                             }
                         />
 
-                        {/* Remove button */}
+                        {/* Remove item button */}
                         <Button
                             variant="outlined"
                             color="error"
@@ -95,6 +98,18 @@ const CartPage = () => {
             <Typography variant="h5" sx={{ mt: 3 }}>
                 Total: {total} $
             </Typography>
+
+            {/* Checkout button */}
+            <Button
+                component={Link}
+                to="/checkout"
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{ mt: 2 }}
+            >
+                Proceed to checkout
+            </Button>
         </Box>
     );
 };
