@@ -3,7 +3,16 @@ import { useAuth } from "../context/AuthContext";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-import { Box, Typography, List, ListItem, Skeleton } from "@mui/material";
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    CardActions,
+    Chip,
+    Button,
+    Skeleton,
+} from "@mui/material";
 
 const OrdersPage = () => {
     const { user } = useAuth();
@@ -46,10 +55,10 @@ const OrdersPage = () => {
                 {[1, 2, 3].map((i) => (
                     <Skeleton
                         key={i}
-                        variant="text"
-                        width={350}
-                        height={32}
-                        sx={{ my: 1 }}
+                        variant="rectangular"
+                        width="100%"
+                        height={90}
+                        sx={{ my: 1, borderRadius: 1 }}
                     />
                 ))}
             </Box>
@@ -69,19 +78,67 @@ const OrdersPage = () => {
             </Box>
         );
 
+    // Helper: colored status chip
+    const getStatusChip = (status) => {
+        const colors = {
+            processing: "info",
+            paid: "success",
+            shipped: "warning",
+            delivered: "success",
+            cancelled: "error",
+        };
+
+        return (
+            <Chip
+                label={status}
+                color={colors[status] || "default"}
+                size="small"
+                sx={{ textTransform: "capitalize" }}
+            />
+        );
+    };
+
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
                 My Orders
             </Typography>
 
-            <List>
+            {/* Orders list as cards */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {orders.map((o) => (
-                    <ListItem key={o.id} sx={{ px: 0 }}>
-                        Order #{o.id} — {o.total} ₽ — status: {o.status}
-                    </ListItem>
+                    <Card key={o.id} sx={{ p: 2 }}>
+                        <CardContent>
+                            {/* Order ID */}
+                            <Typography variant="h6">
+                                Order #{o.id}
+                            </Typography>
+
+                            {/* Order date */}
+                            <Typography variant="body2" color="text.secondary">
+                                {o.createdAt?.toDate().toLocaleString()}
+                            </Typography>
+
+                            {/* Order total */}
+                            <Typography sx={{ mt: 1 }}>
+                                Total: <strong>{o.total} ₽</strong>
+                            </Typography>
+
+                            {/* Status chip */}
+                            <Box sx={{ mt: 1 }}>
+                                {getStatusChip(o.status)}
+                            </Box>
+                        </CardContent>
+
+                        <CardActions sx={{ justifyContent: "flex-end" }}>
+                            {/* Button for future order details page */}
+                            <Button variant="outlined" size="small">
+                                View details
+                            </Button>
+                        </CardActions>
+                    </Card>
                 ))}
-            </List>
+            </Box>
         </Box>
     );
 };
