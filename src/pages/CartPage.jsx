@@ -147,7 +147,7 @@ const CartPage = () => {
 
             {/* Total price */}
             <Typography variant="h5" sx={{ mt: 3 }}>
-                Total: {total} $
+                Total: {total}$
             </Typography>
 
             {/* Checkout button */}

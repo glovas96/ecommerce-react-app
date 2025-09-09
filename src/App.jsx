@@ -10,6 +10,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
+import OrderDetailsPage from "./pages/OrderDetailsPage";
 
 import Navigation from "./components/Navigation";
 
@@ -47,6 +48,15 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <OrdersPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/orders/:id"
+                    element={
+                        <ProtectedRoute>
+                            <OrderDetailsPage />
                         </ProtectedRoute>
                     }
                 />

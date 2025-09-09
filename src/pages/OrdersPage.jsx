@@ -14,6 +14,8 @@ import {
     Skeleton,
 } from "@mui/material";
 
+import { Link } from "react-router-dom";
+
 const OrdersPage = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState(null);
@@ -121,7 +123,7 @@ const OrdersPage = () => {
 
                             {/* Order total */}
                             <Typography sx={{ mt: 1 }}>
-                                Total: <strong>{o.total} ₽</strong>
+                                Total: <strong>{o.total}$</strong>
                             </Typography>
 
                             {/* Status chip */}
@@ -131,8 +133,13 @@ const OrdersPage = () => {
                         </CardContent>
 
                         <CardActions sx={{ justifyContent: "flex-end" }}>
-                            {/* Button for future order details page */}
-                            <Button variant="outlined" size="small">
+                            {/* Button for order details page */}
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                component={Link}
+                                to={`/orders/${o.id}`}
+                            >
                                 View details
                             </Button>
                         </CardActions>
