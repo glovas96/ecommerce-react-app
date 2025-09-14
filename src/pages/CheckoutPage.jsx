@@ -37,12 +37,40 @@ const CheckoutPage = () => {
     const [street, setStreet] = useState("");
     const [zip, setZip] = useState("");
 
+    // Validation errors
+    const [errors, setErrors] = useState({});
+
     // Loading state for button
     const [loading, setLoading] = useState(false);
+
+    // Validate form
+    const validate = () => {
+        const newErrors = {};
+
+        if (!name.trim()) newErrors.name = "Name is required";
+
+        if (!phone.trim()) newErrors.phone = "Phone is required";
+        else if (!/^[\d+\-\s]{7,}$/.test(phone))
+            newErrors.phone = "Invalid phone number";
+
+        if (!city.trim()) newErrors.city = "City is required";
+
+        if (!street.trim()) newErrors.street = "Street is required";
+
+        if (!zip.trim()) newErrors.zip = "ZIP code is required";
+        else if (zip.length < 4) newErrors.zip = "ZIP is too short";
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
 
     // Submit order
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate before submit
+        if (!validate()) return;
 
         if (!user) {
             navigate("/login?redirectTo=/checkout");
@@ -101,35 +129,40 @@ const CheckoutPage = () => {
                         label="Full name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        required
+                        error={!!errors.name}
+                        helperText={errors.name}
                     />
 
                     <TextField
                         label="Phone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        required
+                        error={!!errors.phone}
+                        helperText={errors.phone}
                     />
 
                     <TextField
                         label="City"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        required
+                        error={!!errors.city}
+                        helperText={errors.city}
                     />
 
                     <TextField
                         label="Street"
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
-                        required
+                        error={!!errors.street}
+                        helperText={errors.street}
                     />
 
                     <TextField
                         label="ZIP code"
                         value={zip}
                         onChange={(e) => setZip(e.target.value)}
-                        required
+                        error={!!errors.zip}
+                        helperText={errors.zip}
                     />
 
                     <Button
