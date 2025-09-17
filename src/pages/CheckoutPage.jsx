@@ -20,6 +20,34 @@ import {
     Divider,
 } from "@mui/material";
 
+// Zod schema
+import { z } from "zod";
+
+// Strict validation similar to Ozon/WB
+const checkoutSchema = z.object({
+    name: z
+        .string()
+        .min(2, "Name is too short")
+        .regex(/^[A-Za-z\s-]+$/, "Name must contain only letters"),
+
+    phone: z
+        .string()
+        .regex(/^\+?\d{10,15}$/, "Invalid phone number"),
+
+    city: z
+        .string()
+        .min(2, "City is too short")
+        .regex(/^[A-Za-z\s-]+$/, "City must contain only letters"),
+
+    street: z
+        .string()
+        .min(3, "Street is too short"),
+
+    zip: z
+        .string()
+        .regex(/^\d{4,10}$/, "ZIP must contain only digits"),
+});
+
 const CheckoutPage = () => {
     // Redux state
     const items = useSelector(selectCartItems);
@@ -40,38 +68,46 @@ const CheckoutPage = () => {
     // Validation errors
     const [errors, setErrors] = useState({});
 
-    // Loading state for button
+    // Loading state for submit button
     const [loading, setLoading] = useState(false);
 
-    // Validate form
-    const validate = () => {
-        const newErrors = {};
-
-        if (!name.trim()) newErrors.name = "Name is required";
-
-        if (!phone.trim()) newErrors.phone = "Phone is required";
-        else if (!/^[\d+\-\s]{7,}$/.test(phone))
-            newErrors.phone = "Invalid phone number";
-
-        if (!city.trim()) newErrors.city = "City is required";
-
-        if (!street.trim()) newErrors.street = "Street is required";
-
-        if (!zip.trim()) newErrors.zip = "ZIP code is required";
-        else if (zip.length < 4) newErrors.zip = "ZIP is too short";
-
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
+    // Clear field-specific error when user types
+    const clearFieldError = (field) => {
+        setErrors((prev) => {
+            if (!prev[field]) return prev;
+            const updated = { ...prev };
+            delete updated[field];
+            return updated;
+        });
     };
 
-    // Submit order
+    // Submit order handler
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("SUBMIT CLICKED");
 
-        // Validate before submit
-        if (!validate()) return;
+        // Validate form with Zod
+        const result = checkoutSchema.safeParse({
+            name,
+            phone,
+            city,
+            street,
+            zip,
+        });
 
+        if (!result.success) {
+            const formatted = {};
+            result.error.issues.forEach((err) => {
+                formatted[err.path[0]] = err.message;
+            });
+            setErrors(formatted);
+            return;
+        }
+
+        // Clear errors if validation passed
+        setErrors({});
+
+        // Redirect if user is not logged in
         if (!user) {
             navigate("/login?redirectTo=/checkout");
             return;
@@ -92,12 +128,12 @@ const CheckoutPage = () => {
             address: { city, street, zip },
         });
 
-        // Clear cart and redirect
+        // Clear cart and redirect to orders page
         dispatch(clearCart());
         navigate("/orders");
     };
 
-    // Empty cart state
+    // If cart is empty
     if (!items.length)
         return (
             <Typography sx={{ p: 3 }} variant="h6">
@@ -117,6 +153,7 @@ const CheckoutPage = () => {
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
+                    noValidate
                     sx={{
                         display: "flex",
                         flexDirection: "column",
@@ -128,41 +165,62 @@ const CheckoutPage = () => {
                     <TextField
                         label="Full name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            clearFieldError("name");
+                        }}
                         error={!!errors.name}
                         helperText={errors.name}
+                        type="text"
                     />
 
                     <TextField
                         label="Phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                            setPhone(e.target.value);
+                            clearFieldError("phone");
+                        }}
                         error={!!errors.phone}
                         helperText={errors.phone}
+                        type="text"
                     />
 
                     <TextField
                         label="City"
                         value={city}
-                        onChange={(e) => setCity(e.target.value)}
+                        onChange={(e) => {
+                            setCity(e.target.value);
+                            clearFieldError("city");
+                        }}
                         error={!!errors.city}
                         helperText={errors.city}
+                        type="text"
                     />
 
                     <TextField
                         label="Street"
                         value={street}
-                        onChange={(e) => setStreet(e.target.value)}
+                        onChange={(e) => {
+                            setStreet(e.target.value);
+                            clearFieldError("street");
+                        }}
                         error={!!errors.street}
                         helperText={errors.street}
+                        type="text"
                     />
 
                     <TextField
                         label="ZIP code"
                         value={zip}
-                        onChange={(e) => setZip(e.target.value)}
+                        onChange={(e) => {
+                            setZip(e.target.value);
+                            clearFieldError("zip");
+                        }}
                         error={!!errors.zip}
                         helperText={errors.zip}
+                        type="text"
+                        inputMode="numeric"
                     />
 
                     <Button
