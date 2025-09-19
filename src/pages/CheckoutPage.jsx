@@ -20,8 +20,9 @@ import {
     Divider,
 } from "@mui/material";
 
-// Zod schema
 import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Strict validation similar to Ozon/WB
 const checkoutSchema = z.object({
@@ -58,56 +59,23 @@ const CheckoutPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // Form fields
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [city, setCity] = useState("");
-    const [street, setStreet] = useState("");
-    const [zip, setZip] = useState("");
-
-    // Validation errors
-    const [errors, setErrors] = useState({});
-
     // Loading state for submit button
     const [loading, setLoading] = useState(false);
 
-    // Clear field-specific error when user types
-    const clearFieldError = (field) => {
-        setErrors((prev) => {
-            if (!prev[field]) return prev;
-            const updated = { ...prev };
-            delete updated[field];
-            return updated;
-        });
-    };
+    // React Hook Form setup
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(checkoutSchema),
+        mode: "onChange", // live validation
+    });
 
-    // Submit order handler
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log("SUBMIT CLICKED");
+    // Submit handler
+    const onSubmit = async (data) => {
+        console.log("FORM SUBMITTED", data);
 
-        // Validate form with Zod
-        const result = checkoutSchema.safeParse({
-            name,
-            phone,
-            city,
-            street,
-            zip,
-        });
-
-        if (!result.success) {
-            const formatted = {};
-            result.error.issues.forEach((err) => {
-                formatted[err.path[0]] = err.message;
-            });
-            setErrors(formatted);
-            return;
-        }
-
-        // Clear errors if validation passed
-        setErrors({});
-
-        // Redirect if user is not logged in
         if (!user) {
             navigate("/login?redirectTo=/checkout");
             return;
@@ -115,7 +83,6 @@ const CheckoutPage = () => {
 
         setLoading(true);
 
-        // Create order in Firestore
         await addDoc(collection(db, "orders"), {
             userId: user.uid,
             email: user.email,
@@ -123,12 +90,14 @@ const CheckoutPage = () => {
             total,
             status: "processing",
             createdAt: serverTimestamp(),
-            name,
-            phone,
-            address: { city, street, zip },
+            ...data,
+            address: {
+                city: data.city,
+                street: data.street,
+                zip: data.zip,
+            },
         });
 
-        // Clear cart and redirect to orders page
         dispatch(clearCart());
         navigate("/orders");
     };
@@ -152,7 +121,7 @@ const CheckoutPage = () => {
                 {/* Checkout form */}
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     noValidate
                     sx={{
                         display: "flex",
@@ -164,62 +133,37 @@ const CheckoutPage = () => {
                 >
                     <TextField
                         label="Full name"
-                        value={name}
-                        onChange={(e) => {
-                            setName(e.target.value);
-                            clearFieldError("name");
-                        }}
+                        {...register("name")}
                         error={!!errors.name}
-                        helperText={errors.name}
-                        type="text"
+                        helperText={errors.name?.message}
                     />
 
                     <TextField
                         label="Phone"
-                        value={phone}
-                        onChange={(e) => {
-                            setPhone(e.target.value);
-                            clearFieldError("phone");
-                        }}
+                        {...register("phone")}
                         error={!!errors.phone}
-                        helperText={errors.phone}
-                        type="text"
+                        helperText={errors.phone?.message}
                     />
 
                     <TextField
                         label="City"
-                        value={city}
-                        onChange={(e) => {
-                            setCity(e.target.value);
-                            clearFieldError("city");
-                        }}
+                        {...register("city")}
                         error={!!errors.city}
-                        helperText={errors.city}
-                        type="text"
+                        helperText={errors.city?.message}
                     />
 
                     <TextField
                         label="Street"
-                        value={street}
-                        onChange={(e) => {
-                            setStreet(e.target.value);
-                            clearFieldError("street");
-                        }}
+                        {...register("street")}
                         error={!!errors.street}
-                        helperText={errors.street}
-                        type="text"
+                        helperText={errors.street?.message}
                     />
 
                     <TextField
                         label="ZIP code"
-                        value={zip}
-                        onChange={(e) => {
-                            setZip(e.target.value);
-                            clearFieldError("zip");
-                        }}
+                        {...register("zip")}
                         error={!!errors.zip}
-                        helperText={errors.zip}
-                        type="text"
+                        helperText={errors.zip?.message}
                         inputMode="numeric"
                     />
 
