@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
+import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
 import CartPage from "./pages/CartPage";
@@ -24,7 +25,7 @@ const App = () => {
 
             {/* Routes */}
             <Routes>
-                <Route path="/" element={<div>Home</div>} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
                 <Route path="/product/:id" element={<ProductPage />} />
                 <Route path="/cart" element={<CartPage />} />
