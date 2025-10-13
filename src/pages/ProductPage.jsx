@@ -174,6 +174,29 @@ const ProductPage = () => {
                         {product.description}
                     </Typography>
 
+                    {/* Product specs */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="h6" gutterBottom>
+                            Specifications
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Brand:</strong> {product.brand}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Category:</strong> {product.category}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>In stock:</strong> {product.stock} pcs
+                        </Typography>
+
+                        <Typography variant="body2">
+                            <strong>Warranty:</strong> 12‑month official warranty
+                        </Typography>
+                    </Box>
+
                     {/* Quantity selector */}
                     <Box
                         sx={{
