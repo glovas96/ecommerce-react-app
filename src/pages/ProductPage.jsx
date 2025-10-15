@@ -10,6 +10,8 @@ import {
     Skeleton,
     Rating,
     IconButton,
+    Card,
+    CardContent,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -19,7 +21,7 @@ const ProductPage = () => {
     // Get product ID from URL
     const { id } = useParams();
 
-    // Local state for a single product
+    // Product data
     const [product, setProduct] = useState(null);
 
     // Selected image for gallery
@@ -28,16 +30,30 @@ const ProductPage = () => {
     // Quantity selector
     const [quantity, setQuantity] = useState(1);
 
-    // Redux dispatch function
+    // Related products
+    const [related, setRelated] = useState([]);
+
+    // Redux dispatch
     const dispatch = useDispatch();
 
     useEffect(() => {
-        // Fetch product by ID
+        // Load product by ID
         fetch(`https://dummyjson.com/products/${id}`)
             .then((res) => res.json())
             .then((data) => {
                 setProduct(data);
                 setSelectedImage(data.thumbnail);
+
+                // Load related products from same category
+                fetch(`https://dummyjson.com/products/category/${data.category}`)
+                    .then((res) => res.json())
+                    .then((catData) => {
+                        const filtered = catData.products
+                            .filter((p) => p.id !== data.id)
+                            .slice(0, 4);
+
+                        setRelated(filtered);
+                    });
             });
     }, [id]);
 
@@ -54,10 +70,11 @@ const ProductPage = () => {
         );
     };
 
+    // Quantity handlers
     const increase = () => setQuantity((q) => q + 1);
     const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-    // Show loading state
+    // Loading skeleton
     if (!product)
         return (
             <Box sx={{ p: 3 }}>
@@ -68,7 +85,7 @@ const ProductPage = () => {
             </Box>
         );
 
-    // Empty state: product not found
+    // Product not found
     if (product && product.message === "Product not found")
         return (
             <Box sx={{ p: 3 }}>
@@ -88,7 +105,7 @@ const ProductPage = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            {/* Two-column layout */}
+            {/* Main layout */}
             <Box
                 sx={{
                     display: "flex",
@@ -97,14 +114,8 @@ const ProductPage = () => {
                     flexWrap: "wrap",
                 }}
             >
-                {/* LEFT COLUMN — Thumbnails */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 2,
-                    }}
-                >
+                {/* Thumbnails column */}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {product.images?.map((img, index) => (
                         <Box
                             key={index}
@@ -138,7 +149,7 @@ const ProductPage = () => {
                     ))}
                 </Box>
 
-                {/* MAIN IMAGE */}
+                {/* Main image */}
                 <Box>
                     <img
                         src={selectedImage}
@@ -151,8 +162,9 @@ const ProductPage = () => {
                     />
                 </Box>
 
-                {/* RIGHT COLUMN — title, price, description, button */}
+                {/* Product info */}
                 <Box sx={{ maxWidth: 500 }}>
+                    {/* Title */}
                     <Typography variant="h4" gutterBottom>
                         {product.title}
                     </Typography>
@@ -165,16 +177,17 @@ const ProductPage = () => {
                         </Typography>
                     </Box>
 
+                    {/* Price */}
                     <Typography variant="h6" color="primary" gutterBottom>
                         Price: {product.price} $
                     </Typography>
 
-                    {/* Product description */}
+                    {/* Description */}
                     <Typography variant="body1" sx={{ mb: 3 }}>
                         {product.description}
                     </Typography>
 
-                    {/* Product specs */}
+                    {/* Specifications block */}
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="h6" gutterBottom>
                             Specifications
@@ -198,14 +211,7 @@ const ProductPage = () => {
                     </Box>
 
                     {/* Quantity selector */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            mb: 3,
-                        }}
-                    >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
                         <IconButton onClick={decrease}>
                             <RemoveIcon />
                         </IconButton>
@@ -217,7 +223,7 @@ const ProductPage = () => {
                         </IconButton>
                     </Box>
 
-                    {/* Add to cart button */}
+                    {/* Buttons */}
                     <Button
                         variant="contained"
                         size="large"
@@ -227,12 +233,79 @@ const ProductPage = () => {
                         Add to cart
                     </Button>
 
-                    {/* Buy now */}
                     <Button variant="outlined" size="large" href="/checkout">
                         Buy now
                     </Button>
                 </Box>
             </Box>
+
+            {/* Related products */}
+            {related.length > 0 && (
+                <Box sx={{ mt: 6 }}>
+                    <Typography variant="h5" gutterBottom>
+                        Related products
+                    </Typography>
+
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                            gap: 3,
+                            mt: 2,
+                        }}
+                    >
+                        {related.map((p) => (
+                            <Card
+                                key={p.id}
+                                component="a"
+                                href={`/product/${p.id}`}
+                                sx={{
+                                    textDecoration: "none",
+                                    color: "inherit",
+                                    borderRadius: 3,
+                                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                                    transition: "0.2s",
+                                    "&:hover": { transform: "translateY(-4px)" },
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: "100%",
+                                        height: 180,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        backgroundColor: "#f5f5f5",
+                                        borderRadius: 2,
+                                        overflow: "hidden",
+                                        p: 1,
+                                    }}
+                                >
+                                    <img
+                                        src={p.thumbnail}
+                                        alt={p.title}
+                                        style={{
+                                            maxWidth: "100%",
+                                            maxHeight: "100%",
+                                            objectFit: "contain",
+                                        }}
+                                    />
+                                </Box>
+
+                                <CardContent>
+                                    <Typography variant="h6" noWrap>
+                                        {p.title}
+                                    </Typography>
+
+                                    <Typography variant="body1" color="primary">
+                                        ${p.price}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+                </Box>
+            )}
         </Box>
     );
 };
