@@ -103,6 +103,12 @@ const ProductPage = () => {
             </Box>
         );
 
+    // Calculate old price (before discount)
+    const oldPrice =
+        product.discountPercentage > 0
+            ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
+            : null;
+
     return (
         <Box sx={{ p: 3 }}>
             {/* Main layout */}
@@ -177,10 +183,30 @@ const ProductPage = () => {
                         </Typography>
                     </Box>
 
-                    {/* Price */}
-                    <Typography variant="h6" color="primary" gutterBottom>
-                        Price: {product.price} $
-                    </Typography>
+                    {/* Price block with discount */}
+                    <Box sx={{ mb: 2 }}>
+                        {oldPrice && (
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    textDecoration: "line-through",
+                                    color: "text.secondary",
+                                }}
+                            >
+                                ${oldPrice}
+                            </Typography>
+                        )}
+
+                        <Typography variant="h5" color="primary" sx={{ fontWeight: "bold" }}>
+                            ${product.price}
+                        </Typography>
+
+                        {product.discountPercentage > 0 && (
+                            <Typography variant="body2" color="error">
+                                -{product.discountPercentage}% discount
+                            </Typography>
+                        )}
+                    </Box>
 
                     {/* Description */}
                     <Typography variant="body1" sx={{ mb: 3 }}>
