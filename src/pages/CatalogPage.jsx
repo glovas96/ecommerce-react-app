@@ -210,7 +210,7 @@ const CatalogPage = () => {
                 }}
             >
                 {paginatedProducts.map((p) => {
-                    // Calculate old price
+                    // Calculate old price only for real discounts
                     const oldPrice =
                         p.discountPercentage >= 10
                             ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
@@ -224,11 +224,29 @@ const CatalogPage = () => {
                                 display: "flex",
                                 flexDirection: "column",
                                 width: "100%",
-                                position: "relative", // required for SALE badge
+                                position: "relative",
                             }}
                         >
-                            {/* SALE badge (only for real discounts ≥10%) */}
-                            {p.discountPercentage >= 10 && (
+                            {/* Discount badges */}
+                            {p.discountPercentage > 15 ? (
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        top: 8,
+                                        left: 8,
+                                        backgroundColor: "orange",
+                                        color: "#fff",
+                                        px: 1.2,
+                                        py: 0.3,
+                                        borderRadius: 1,
+                                        fontSize: "0.75rem",
+                                        fontWeight: "bold",
+                                        zIndex: 2,
+                                    }}
+                                >
+                                    HOT DEAL
+                                </Box>
+                            ) : p.discountPercentage >= 10 ? (
                                 <Box
                                     sx={{
                                         position: "absolute",
@@ -246,7 +264,7 @@ const CatalogPage = () => {
                                 >
                                     SALE
                                 </Box>
-                            )}
+                            ) : null}
 
                             {/* Product image */}
                             <CardMedia
@@ -278,7 +296,7 @@ const CatalogPage = () => {
                                     {p.title}
                                 </Typography>
 
-                                {/* Price block with discount */}
+                                {/* Price block */}
                                 <Box sx={{ mb: 1 }}>
                                     {oldPrice && (
                                         <Typography
