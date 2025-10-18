@@ -28,6 +28,7 @@ const CatalogPage = () => {
     const initialSearch = searchParams.get("search") || "";
     const initialPage = Number(searchParams.get("page")) || 1;
 
+    // Local state
     const [products, setProducts] = useState(null);
     const [categories, setCategories] = useState([]);
     const [category, setCategory] = useState(initialCategory);
@@ -37,22 +38,22 @@ const CatalogPage = () => {
 
     const ITEMS_PER_PAGE = 20;
 
-    // Load categories on initial mount
+    // Load categories on mount
     useEffect(() => {
         getCategories().then((cats) => {
             setCategories(cats);
         });
     }, []);
 
-    // Load products (all or filtered by category)
+    // Load products (filtered by category)
     useEffect(() => {
-        setProducts(null); // Show skeleton while loading
+        setProducts(null); // show skeleton
         getProducts(category).then((prods) => {
             setProducts(prods);
         });
     }, [category]);
 
-    // --- Update URL when category changes (sync UI → URL)
+    // --- Update URL when category changes
     const handleCategoryChange = (value) => {
         setCategory(value);
         setPage(1);
@@ -65,7 +66,7 @@ const CatalogPage = () => {
         setSearchParams(params);
     };
 
-    // --- Update URL when sort changes (sync UI → URL)
+    // --- Update URL when sort changes
     const handleSortChange = (value) => {
         setSort(value);
         setPage(1);
@@ -78,7 +79,7 @@ const CatalogPage = () => {
         setSearchParams(params);
     };
 
-    // --- Update URL when search changes (sync UI → URL)
+    // --- Update URL when search changes
     const handleSearchChange = (value) => {
         setSearch(value);
         setPage(1);
@@ -91,7 +92,7 @@ const CatalogPage = () => {
         setSearchParams(params);
     };
 
-    // --- Update URL when page changes (sync UI → URL)
+    // --- Update URL when page changes
     const handlePageChange = (newPage) => {
         setPage(newPage);
 
@@ -100,14 +101,14 @@ const CatalogPage = () => {
         setSearchParams(params);
     };
 
-    // --- Apply search filter (client-side)
+    // --- Apply search filter
     const filteredProducts = products
         ? products.filter((p) =>
-            p.title.toLowerCase().includes(search.toLowerCase())
-        )
+              p.title.toLowerCase().includes(search.toLowerCase())
+          )
         : [];
 
-    // --- Sorting logic (client-side sorting)
+    // --- Sorting logic
     const sortedProducts = [...filteredProducts];
 
     if (sort === "price_asc") sortedProducts.sort((a, b) => a.price - b.price);
@@ -120,7 +121,7 @@ const CatalogPage = () => {
     if (sort === "alpha_desc")
         sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
 
-    // --- Pagination logic (client-side)
+    // --- Pagination logic
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const paginatedProducts = sortedProducts.slice(
         startIndex,
@@ -129,7 +130,7 @@ const CatalogPage = () => {
 
     const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
 
-    // Show skeleton while products are loading
+    // Show skeleton while loading
     if (!products)
         return (
             <Box sx={{ p: 3 }}>
@@ -174,7 +175,6 @@ const CatalogPage = () => {
                 >
                     <MenuItem value="">All categories</MenuItem>
 
-                    {/* Render category list */}
                     {categories.map((c) => (
                         <MenuItem key={c.slug} value={c.slug}>
                             {c.name}
@@ -196,12 +196,12 @@ const CatalogPage = () => {
                     <MenuItem value="price_desc">Price: High → Low</MenuItem>
                     <MenuItem value="rating_desc">Rating</MenuItem>
                     <MenuItem value="discount_desc">Discount</MenuItem>
-                    <MenuItem value="alpha_asc">Alphabetical A → Z</MenuItem>
-                    <MenuItem value="alpha_desc">Alphabetical Z → A</MenuItem>
+                    <MenuItem value="alpha_asc">A → Z</MenuItem>
+                    <MenuItem value="alpha_desc">Z → A</MenuItem>
                 </Select>
             </FormControl>
 
-            {/* Product cards grid (CSS Grid for equal width) */}
+            {/* Product cards grid */}
             <Box
                 sx={{
                     display: "grid",
@@ -209,64 +209,121 @@ const CatalogPage = () => {
                     gap: 3,
                 }}
             >
-                {paginatedProducts.map((p) => (
-                    <Card
-                        key={p.id}
-                        sx={{
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            width: "100%",
-                        }}
-                    >
-                        {/* Product image */}
-                        <CardMedia
-                            component="img"
-                            image={p.thumbnail}
-                            alt={p.title}
+                {paginatedProducts.map((p) => {
+                    // Calculate old price
+                    const oldPrice =
+                        p.discountPercentage >= 10
+                            ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
+                            : null;
+
+                    return (
+                        <Card
+                            key={p.id}
                             sx={{
-                                height: 180,
+                                height: "100%",
+                                display: "flex",
+                                flexDirection: "column",
                                 width: "100%",
-                                objectFit: "contain",      // show full image
-                                backgroundColor: "#f5f5f5", // neutral bg
+                                position: "relative", // required for SALE badge
                             }}
-                        />
+                        >
+                            {/* SALE badge (only for real discounts ≥10%) */}
+                            {p.discountPercentage >= 10 && (
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        top: 8,
+                                        left: 8,
+                                        backgroundColor: "error.main",
+                                        color: "#fff",
+                                        px: 1.2,
+                                        py: 0.3,
+                                        borderRadius: 1,
+                                        fontSize: "0.75rem",
+                                        fontWeight: "bold",
+                                        zIndex: 2,
+                                    }}
+                                >
+                                    SALE
+                                </Box>
+                            )}
 
-                        <CardContent sx={{ flexGrow: 1 }}>
-                            <Typography
-                                variant="h6"
+                            {/* Product image */}
+                            <CardMedia
+                                component="img"
+                                image={p.thumbnail}
+                                alt={p.title}
                                 sx={{
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                    lineHeight: 1.2,       // compact spacing
-                                    minHeight: "2.4em",    // exact height for 2 lines
-                                    mb: 1,                 // spacing under title
+                                    height: 180,
+                                    width: "100%",
+                                    objectFit: "contain",
+                                    backgroundColor: "#f5f5f5",
                                 }}
-                            >
-                                {p.title}
-                            </Typography>
+                            />
 
-                            <Typography variant="body2" color="text.secondary">
-                                ${p.price}
-                            </Typography>
+                            <CardContent sx={{ flexGrow: 1 }}>
+                                {/* Title */}
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                        lineHeight: 1.2,
+                                        minHeight: "2.4em",
+                                        mb: 1,
+                                    }}
+                                >
+                                    {p.title}
+                                </Typography>
 
-                            <Typography variant="body2" color="text.secondary">
-                                Rating: {p.rating}
-                            </Typography>
-                        </CardContent>
+                                {/* Price block with discount */}
+                                <Box sx={{ mb: 1 }}>
+                                    {oldPrice && (
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                textDecoration: "line-through",
+                                                color: "text.secondary",
+                                            }}
+                                        >
+                                            ${oldPrice}
+                                        </Typography>
+                                    )}
 
-                        <CardActions>
-                            <Button component={Link} to={`/product/${p.id}`} size="small">
-                                View
-                            </Button>
-                        </CardActions>
-                    </Card>
-                ))}
+                                    <Typography
+                                        variant="h6"
+                                        color="primary"
+                                        sx={{ fontWeight: "bold" }}
+                                    >
+                                        ${p.price}
+                                    </Typography>
+
+                                    {p.discountPercentage >= 10 && (
+                                        <Typography variant="body2" color="error">
+                                            -{p.discountPercentage}% OFF
+                                        </Typography>
+                                    )}
+                                </Box>
+
+                                {/* Rating */}
+                                <Typography variant="body2" color="text.secondary">
+                                    Rating: {p.rating}
+                                </Typography>
+                            </CardContent>
+
+                            <CardActions>
+                                <Button component={Link} to={`/product/${p.id}`} size="small">
+                                    View
+                                </Button>
+                            </CardActions>
+                        </Card>
+                    );
+                })}
             </Box>
 
-            {/* Pagination controls */}
+            {/* Pagination */}
             <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
                 <Button
                     variant="outlined"
@@ -293,4 +350,3 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
-
