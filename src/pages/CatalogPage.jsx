@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../features/cart/cartSlice";
 import { getProducts, getCategories } from "../api";
 
 import {
@@ -19,6 +21,9 @@ import {
 } from "@mui/material";
 
 const CatalogPage = () => {
+    const navigate = useNavigate(); // navigation for full-card click
+    const dispatch = useDispatch(); // redux dispatch for cart
+
     // URL params
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -40,75 +45,64 @@ const CatalogPage = () => {
 
     // Load categories on mount
     useEffect(() => {
-        getCategories().then((cats) => {
-            setCategories(cats);
-        });
+        getCategories().then((cats) => setCategories(cats));
     }, []);
 
-    // Load products (filtered by category)
+    // Load products when category changes
     useEffect(() => {
         setProducts(null); // show skeleton
-        getProducts(category).then((prods) => {
-            setProducts(prods);
-        });
+        getProducts(category).then((prods) => setProducts(prods));
     }, [category]);
 
-    // --- Update URL when category changes
+    // Update URL when category changes
     const handleCategoryChange = (value) => {
         setCategory(value);
         setPage(1);
 
         const params = new URLSearchParams(searchParams);
-        if (value) params.set("category", value);
-        else params.delete("category");
-
+        value ? params.set("category", value) : params.delete("category");
         params.set("page", 1);
         setSearchParams(params);
     };
 
-    // --- Update URL when sort changes
+    // Update URL when sort changes
     const handleSortChange = (value) => {
         setSort(value);
         setPage(1);
 
         const params = new URLSearchParams(searchParams);
-        if (value) params.set("sort", value);
-        else params.delete("sort");
-
+        value ? params.set("sort", value) : params.delete("sort");
         params.set("page", 1);
         setSearchParams(params);
     };
 
-    // --- Update URL when search changes
+    // Update URL when search changes
     const handleSearchChange = (value) => {
         setSearch(value);
         setPage(1);
 
         const params = new URLSearchParams(searchParams);
-        if (value) params.set("search", value);
-        else params.delete("search");
-
+        value ? params.set("search", value) : params.delete("search");
         params.set("page", 1);
         setSearchParams(params);
     };
 
-    // --- Update URL when page changes
+    // Update URL when page changes
     const handlePageChange = (newPage) => {
         setPage(newPage);
-
         const params = new URLSearchParams(searchParams);
         params.set("page", newPage);
         setSearchParams(params);
     };
 
-    // --- Apply search filter
+    // Apply search filter
     const filteredProducts = products
         ? products.filter((p) =>
               p.title.toLowerCase().includes(search.toLowerCase())
           )
         : [];
 
-    // --- Sorting logic
+    // Sorting logic
     const sortedProducts = [...filteredProducts];
 
     if (sort === "price_asc") sortedProducts.sort((a, b) => a.price - b.price);
@@ -121,7 +115,7 @@ const CatalogPage = () => {
     if (sort === "alpha_desc")
         sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
 
-    // --- Pagination logic
+    // Pagination logic
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const paginatedProducts = sortedProducts.slice(
         startIndex,
@@ -210,7 +204,6 @@ const CatalogPage = () => {
                 }}
             >
                 {paginatedProducts.map((p) => {
-                    // Calculate old price only for real discounts
                     const oldPrice =
                         p.discountPercentage >= 10
                             ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
@@ -219,15 +212,22 @@ const CatalogPage = () => {
                     return (
                         <Card
                             key={p.id}
+                            onClick={() => navigate(`/product/${p.id}`)} // full-card click
                             sx={{
+                                cursor: "pointer",
                                 height: "100%",
                                 display: "flex",
                                 flexDirection: "column",
-                                width: "100%",
                                 position: "relative",
+                                borderRadius: 2,
+                                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                                "&:hover": {
+                                    transform: "translateY(-5px)",
+                                    boxShadow: 4,
+                                },
                             }}
                         >
-                            {/* Discount badges */}
+                            {/* SALE / HOT DEAL badges */}
                             {p.discountPercentage > 15 ? (
                                 <Box
                                     sx={{
@@ -296,8 +296,44 @@ const CatalogPage = () => {
                                     {p.title}
                                 </Typography>
 
-                                {/* Price block */}
-                                <Box sx={{ mb: 1 }}>
+                                {/* Rating stars */}
+                                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <span
+                                            key={i}
+                                            style={{
+                                                color:
+                                                    i < Math.round(p.rating)
+                                                        ? "#FFD700"
+                                                        : "#ccc",
+                                                fontSize: "1.1rem",
+                                            }}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ ml: 1 }}
+                                    >
+                                        {p.rating.toFixed(1)}
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+
+                            {/* Price block */}
+                            <Box sx={{ px: 2, pb: 1 }}>
+                                {/* New + old price in one line */}
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    <Typography
+                                        variant="h6"
+                                        color="primary"
+                                        sx={{ fontWeight: "bold" }}
+                                    >
+                                        ${p.price}
+                                    </Typography>
+
                                     {oldPrice && (
                                         <Typography
                                             variant="body2"
@@ -309,31 +345,44 @@ const CatalogPage = () => {
                                             ${oldPrice}
                                         </Typography>
                                     )}
-
-                                    <Typography
-                                        variant="h6"
-                                        color="primary"
-                                        sx={{ fontWeight: "bold" }}
-                                    >
-                                        ${p.price}
-                                    </Typography>
-
-                                    {p.discountPercentage >= 10 && (
-                                        <Typography variant="body2" color="error">
-                                            -{p.discountPercentage}% OFF
-                                        </Typography>
-                                    )}
                                 </Box>
 
-                                {/* Rating */}
-                                <Typography variant="body2" color="text.secondary">
-                                    Rating: {p.rating}
-                                </Typography>
-                            </CardContent>
+                                {/* Discount percent */}
+                                {p.discountPercentage >= 10 && (
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "error.main",
+                                            fontWeight: "bold",
+                                            mt: 0.5,
+                                        }}
+                                    >
+                                        -{p.discountPercentage}% OFF
+                                    </Typography>
+                                )}
+                            </Box>
 
-                            <CardActions>
-                                <Button component={Link} to={`/product/${p.id}`} size="small">
-                                    View
+                            {/* Add to cart button */}
+                            <CardActions sx={{ p: 2 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // stop card click
+
+                                        dispatch(
+                                            addToCart({
+                                                id: p.id,
+                                                title: p.title,
+                                                price: p.price,
+                                                thumbnail: p.thumbnail,
+                                                quantity: 1,
+                                            })
+                                        );
+                                    }}
+                                >
+                                    Add to cart
                                 </Button>
                             </CardActions>
                         </Card>
@@ -368,3 +417,4 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
+
