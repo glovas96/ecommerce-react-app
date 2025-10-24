@@ -3,7 +3,7 @@ import { useAuth } from "./context/AuthContext";
 
 import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
-import ProductPage from "./pages/ProductPage";
+import ProductPage from "./pages/ProductPage.jsx";
 import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";

@@ -12,6 +12,7 @@ import {
     IconButton,
     Card,
     CardContent,
+    CardMedia,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -30,7 +31,7 @@ const ProductPage = () => {
     // Quantity selector
     const [quantity, setQuantity] = useState(1);
 
-    // Related products
+    // Related products (4 items)
     const [related, setRelated] = useState([]);
 
     // Redux dispatch
@@ -44,14 +45,11 @@ const ProductPage = () => {
                 setProduct(data);
                 setSelectedImage(data.thumbnail);
 
-                // Load related products from same category
+                // Load related products (API returns 4 items by default)
                 fetch(`https://dummyjson.com/products/category/${data.category}`)
                     .then((res) => res.json())
                     .then((catData) => {
-                        const filtered = catData.products
-                            .filter((p) => p.id !== data.id)
-                            .slice(0, 4);
-
+                        const filtered = catData.products.filter((p) => p.id !== data.id);
                         setRelated(filtered);
                     });
             });
@@ -103,11 +101,11 @@ const ProductPage = () => {
             </Box>
         );
 
-    // Calculate old price (before discount)
-    const oldPrice =
-        product.discountPercentage > 0
-            ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
-            : null;
+    // Discount logic for main product
+    const hasDiscount = product.discountPercentage >= 10;
+    const oldPrice = hasDiscount
+        ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
+        : null;
 
     return (
         <Box sx={{ p: 3 }}>
@@ -155,8 +153,48 @@ const ProductPage = () => {
                     ))}
                 </Box>
 
-                {/* Main image */}
-                <Box>
+                {/* Main image with SALE / HOT DEAL badges */}
+                <Box sx={{ position: "relative", display: "inline-block" }}>
+                    {/* BADGES */}
+                    {product.discountPercentage > 15 ? (
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: 12,
+                                left: 12,
+                                backgroundColor: "orange",
+                                color: "#fff",
+                                px: 1.4,
+                                py: 0.4,
+                                borderRadius: 1,
+                                fontSize: "0.9rem",
+                                fontWeight: "bold",
+                                zIndex: 2,
+                            }}
+                        >
+                            HOT DEAL
+                        </Box>
+                    ) : hasDiscount ? (
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: 12,
+                                left: 12,
+                                backgroundColor: "error.main",
+                                color: "#fff",
+                                px: 1.4,
+                                py: 0.4,
+                                borderRadius: 1,
+                                fontSize: "0.9rem",
+                                fontWeight: "bold",
+                                zIndex: 2,
+                            }}
+                        >
+                            SALE
+                        </Box>
+                    ) : null}
+
+                    {/* MAIN IMAGE */}
                     <img
                         src={selectedImage}
                         width={400}
@@ -183,27 +221,39 @@ const ProductPage = () => {
                         </Typography>
                     </Box>
 
-                    {/* Price block with discount */}
+                    {/* Price block */}
                     <Box sx={{ mb: 2 }}>
-                        {oldPrice && (
+                        {hasDiscount ? (
+                            <>
+                                <Typography
+                                    variant="h5"
+                                    color="primary"
+                                    sx={{ fontWeight: "bold" }}
+                                >
+                                    ${product.price}
+                                </Typography>
+
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        textDecoration: "line-through",
+                                        color: "text.secondary",
+                                    }}
+                                >
+                                    ${oldPrice}
+                                </Typography>
+
+                                <Typography variant="body2" color="error">
+                                    -{product.discountPercentage}% discount
+                                </Typography>
+                            </>
+                        ) : (
                             <Typography
-                                variant="body1"
-                                sx={{
-                                    textDecoration: "line-through",
-                                    color: "text.secondary",
-                                }}
+                                variant="h5"
+                                color="primary"
+                                sx={{ fontWeight: "bold" }}
                             >
-                                ${oldPrice}
-                            </Typography>
-                        )}
-
-                        <Typography variant="h5" color="primary" sx={{ fontWeight: "bold" }}>
-                            ${product.price}
-                        </Typography>
-
-                        {product.discountPercentage > 0 && (
-                            <Typography variant="body2" color="error">
-                                -{product.discountPercentage}% discount
+                                ${product.price}
                             </Typography>
                         )}
                     </Box>
@@ -213,7 +263,7 @@ const ProductPage = () => {
                         {product.description}
                     </Typography>
 
-                    {/* Specifications block */}
+                    {/* Specifications */}
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="h6" gutterBottom>
                             Specifications
@@ -265,7 +315,7 @@ const ProductPage = () => {
                 </Box>
             </Box>
 
-            {/* Related products */}
+            {/* Related products (4 items, styled like CatalogPage, no Add to cart) */}
             {related.length > 0 && (
                 <Box sx={{ mt: 6 }}>
                     <Typography variant="h5" gutterBottom>
@@ -280,55 +330,180 @@ const ProductPage = () => {
                             mt: 2,
                         }}
                     >
-                        {related.map((p) => (
-                            <Card
-                                key={p.id}
-                                component="a"
-                                href={`/product/${p.id}`}
-                                sx={{
-                                    textDecoration: "none",
-                                    color: "inherit",
-                                    borderRadius: 3,
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                                    transition: "0.2s",
-                                    "&:hover": { transform: "translateY(-4px)" },
-                                }}
-                            >
-                                <Box
+                        {related.map((p) => {
+                            const hasDiscount = p.discountPercentage >= 10;
+                            const oldPrice = hasDiscount
+                                ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
+                                : null;
+
+                            return (
+                                <Card
+                                    key={p.id}
+                                    component="a"
+                                    href={`/product/${p.id}`}
                                     sx={{
-                                        width: "100%",
-                                        height: 180,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        backgroundColor: "#f5f5f5",
+                                        textDecoration: "none",
+                                        color: "inherit",
                                         borderRadius: 2,
-                                        overflow: "hidden",
-                                        p: 1,
+                                        height: "100%",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        position: "relative",
+                                        transition: "0.2s",
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                        "&:hover": {
+                                            transform: "translateY(-5px)",
+                                            boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+                                        },
                                     }}
                                 >
-                                    <img
-                                        src={p.thumbnail}
+                                    {/* BADGES */}
+                                    {p.discountPercentage > 15 ? (
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                top: 8,
+                                                left: 8,
+                                                backgroundColor: "orange",
+                                                color: "#fff",
+                                                px: 1.2,
+                                                py: 0.3,
+                                                borderRadius: 1,
+                                                fontSize: "0.75rem",
+                                                fontWeight: "bold",
+                                                zIndex: 2,
+                                            }}
+                                        >
+                                            HOT DEAL
+                                        </Box>
+                                    ) : hasDiscount ? (
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                top: 8,
+                                                left: 8,
+                                                backgroundColor: "error.main",
+                                                color: "#fff",
+                                                px: 1.2,
+                                                py: 0.3,
+                                                borderRadius: 1,
+                                                fontSize: "0.75rem",
+                                                fontWeight: "bold",
+                                                zIndex: 2,
+                                            }}
+                                        >
+                                            SALE
+                                        </Box>
+                                    ) : null}
+
+                                    {/* IMAGE */}
+                                    <CardMedia
+                                        component="img"
+                                        image={p.thumbnail}
                                         alt={p.title}
-                                        style={{
-                                            maxWidth: "100%",
-                                            maxHeight: "100%",
+                                        sx={{
+                                            height: 180,
+                                            width: "100%",
                                             objectFit: "contain",
+                                            backgroundColor: "#f5f5f5",
                                         }}
                                     />
-                                </Box>
 
-                                <CardContent>
-                                    <Typography variant="h6" noWrap>
-                                        {p.title}
-                                    </Typography>
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        {/* Title */}
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                display: "-webkit-box",
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: "vertical",
+                                                overflow: "hidden",
+                                                lineHeight: 1.2,
+                                                minHeight: "2.4em",
+                                                mb: 1,
+                                            }}
+                                        >
+                                            {p.title}
+                                        </Typography>
 
-                                    <Typography variant="body1" color="primary">
-                                        ${p.price}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        {/* Price block */}
+                                        <Box sx={{ mb: 1 }}>
+                                            {hasDiscount ? (
+                                                <>
+                                                    {/* New price */}
+                                                    <Typography
+                                                        variant="h6"
+                                                        color="primary"
+                                                        sx={{ fontWeight: "bold" }}
+                                                    >
+                                                        ${p.price}
+                                                    </Typography>
+
+                                                    {/* Old price */}
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            textDecoration: "line-through",
+                                                            color: "text.secondary",
+                                                        }}
+                                                    >
+                                                        ${oldPrice}
+                                                    </Typography>
+
+                                                    {/* Discount percent */}
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: "error.main",
+                                                            fontWeight: "bold",
+                                                            mt: 0.5,
+                                                        }}
+                                                    >
+                                                        -{p.discountPercentage}% OFF
+                                                    </Typography>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {/* Only regular price */}
+                                                    <Typography
+                                                        variant="h6"
+                                                        color="primary"
+                                                        sx={{ fontWeight: "bold" }}
+                                                    >
+                                                        ${p.price}
+                                                    </Typography>
+                                                </>
+                                            )}
+                                        </Box>
+
+                                        {/* Rating */}
+                                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    style={{
+                                                        color:
+                                                            i < Math.round(p.rating)
+                                                                ? "#FFD700"
+                                                                : "#ccc",
+                                                        fontSize: "1.1rem",
+                                                    }}
+                                                >
+                                                    ★
+                                                </span>
+                                            ))}
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                                sx={{ ml: 1 }}
+                                            >
+                                                {p.rating.toFixed(1)}
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </Box>
                 </Box>
             )}
