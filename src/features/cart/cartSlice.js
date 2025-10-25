@@ -19,13 +19,15 @@ const cartSlice = createSlice({
 
         // Add product to cart
         addToCart(state, action) {
-            const item = action.payload;
+            const item = action.payload; // item contains id, title, price, thumbnail, quantity
             const existing = state.items.find((i) => i.id === item.id);
 
             if (existing) {
-                existing.quantity += 1;
+                // Increase by selected quantity (NOT +1)
+                existing.quantity += item.quantity;
             } else {
-                state.items.push({ ...item, quantity: 1 });
+                // Add new item with selected quantity (NOT 1)
+                state.items.push({ ...item, quantity: item.quantity });
             }
 
             localStorage.setItem("cart", JSON.stringify(state.items));
