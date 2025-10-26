@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../features/cart/cartSlice";
@@ -36,6 +36,9 @@ const ProductPage = () => {
 
     // Redux dispatch
     const dispatch = useDispatch();
+
+    // Navigation (needed for Buy Now)
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Load product by ID
@@ -309,7 +312,24 @@ const ProductPage = () => {
                         Add to cart
                     </Button>
 
-                    <Button variant="outlined" size="large" href="/checkout">
+                    {/* BUY NOW — send only this product to checkout */}
+                    <Button
+                        variant="outlined"
+                        size="large"
+                        onClick={() =>
+                            navigate("/checkout", {
+                                state: {
+                                    singleItem: {
+                                        id: product.id,
+                                        title: product.title,
+                                        price: product.price,
+                                        thumbnail: product.thumbnail,
+                                        quantity,
+                                    },
+                                },
+                            })
+                        }
+                    >
                         Buy now
                     </Button>
                 </Box>
@@ -430,27 +450,34 @@ const ProductPage = () => {
                                         <Box sx={{ mb: 1 }}>
                                             {hasDiscount ? (
                                                 <>
-                                                    {/* New price */}
-                                                    <Typography
-                                                        variant="h6"
-                                                        color="primary"
-                                                        sx={{ fontWeight: "bold" }}
-                                                    >
-                                                        ${p.price}
-                                                    </Typography>
-
-                                                    {/* Old price */}
-                                                    <Typography
-                                                        variant="body2"
+                                                    {/* New + old price in one line */}
+                                                    <Box
                                                         sx={{
-                                                            textDecoration: "line-through",
-                                                            color: "text.secondary",
+                                                            display: "flex",
+                                                            alignItems: "baseline",
+                                                            gap: 1,
                                                         }}
                                                     >
-                                                        ${oldPrice}
-                                                    </Typography>
+                                                        <Typography
+                                                            variant="h6"
+                                                            color="primary"
+                                                            sx={{ fontWeight: "bold" }}
+                                                        >
+                                                            ${p.price}
+                                                        </Typography>
 
-                                                    {/* Discount percent */}
+                                                        <Typography
+                                                            variant="body2"
+                                                            sx={{
+                                                                textDecoration: "line-through",
+                                                                color: "text.secondary",
+                                                            }}
+                                                        >
+                                                            ${oldPrice}
+                                                        </Typography>
+                                                    </Box>
+
+                                                    {/* Discount percent on next line */}
                                                     <Typography
                                                         variant="body2"
                                                         sx={{

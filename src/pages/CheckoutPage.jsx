@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal } from "../features/cart/selectors";
 import { clearCart } from "../features/cart/cartSlice";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -27,7 +27,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutSchema } from "../validation/checkoutSchema";
 
 const CheckoutPage = () => {
-    // Redux state
+    // Get navigation state (for Buy Now)
+    const location = useLocation();
+    const singleItem = location.state?.singleItem || null;
+
+    // Redux state (cart)
     const items = useSelector(selectCartItems);
     const total = useSelector(selectCartTotal);
 
@@ -46,13 +50,29 @@ const CheckoutPage = () => {
         formState: { errors },
     } = useForm({
         resolver: zodResolver(checkoutSchema),
-        mode: "onChange", // live validation
+        mode: "onChange",
     });
+
+    // Determine which items to show:
+    // If Buy Now → use singleItem
+    // Else → use full cart
+    const orderItems = singleItem ? [singleItem] : items;
+
+    // Calculate total for Buy Now mode
+    const orderTotal = singleItem
+        ? (singleItem.price * singleItem.quantity).toFixed(2)
+        : total;
+
+    // If cart is empty AND no Buy Now item
+    if (!orderItems.length)
+        return (
+            <Typography sx={{ p: 3 }} variant="h6">
+                Your cart is empty
+            </Typography>
+        );
 
     // Submit handler
     const onSubmit = async (data) => {
-        console.log("FORM SUBMITTED", data);
-
         if (!user) {
             navigate("/login?redirectTo=/checkout");
             return;
@@ -63,8 +83,8 @@ const CheckoutPage = () => {
         await addDoc(collection(db, "orders"), {
             userId: user.uid,
             email: user.email,
-            items,
-            total,
+            items: orderItems, // ← IMPORTANT: use Buy Now item OR cart
+            total: orderTotal,
             status: "processing",
             createdAt: serverTimestamp(),
             ...data,
@@ -75,17 +95,13 @@ const CheckoutPage = () => {
             },
         });
 
-        dispatch(clearCart());
+        // Clear cart ONLY if this is a cart checkout
+        if (!singleItem) {
+            dispatch(clearCart());
+        }
+
         navigate("/orders");
     };
-
-    // If cart is empty
-    if (!items.length)
-        return (
-            <Typography sx={{ p: 3 }} variant="h6">
-                Your cart is empty
-            </Typography>
-        );
 
     return (
         <Box sx={{ p: 3, display: "flex", gap: 4 }}>
@@ -168,7 +184,7 @@ const CheckoutPage = () => {
 
                 {/* List of items */}
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {items.map((item) => (
+                    {orderItems.map((item) => (
                         <Card key={item.id} sx={{ display: "flex", p: 1, gap: 2 }}>
                             <CardMedia
                                 component="img"
@@ -208,7 +224,7 @@ const CheckoutPage = () => {
                 <Card sx={{ p: 2 }}>
                     <Typography variant="h6">Total</Typography>
                     <Typography variant="h4" sx={{ mt: 1 }}>
-                        ${total}
+                        ${orderTotal}
                     </Typography>
                 </Card>
             </Box>
