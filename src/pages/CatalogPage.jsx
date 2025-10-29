@@ -204,10 +204,10 @@ const CatalogPage = () => {
                 }}
             >
                 {paginatedProducts.map((p) => {
-                    const oldPrice =
-                        p.discountPercentage >= 10
-                            ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
-                            : null;
+                    const hasDiscount = p.discountPercentage >= 10;
+                    const oldPrice = hasDiscount
+                        ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
+                        : null;
 
                     return (
                         <Card
@@ -246,7 +246,7 @@ const CatalogPage = () => {
                                 >
                                     HOT DEAL
                                 </Box>
-                            ) : p.discountPercentage >= 10 ? (
+                            ) : hasDiscount ? (
                                 <Box
                                     sx={{
                                         position: "absolute",
@@ -296,8 +296,62 @@ const CatalogPage = () => {
                                     {p.title}
                                 </Typography>
 
+                                {/* PRICE BLOCK — SAME ORDER AS RELATED PRODUCTS */}
+                                <Box sx={{ mb: 1 }}>
+                                    {hasDiscount ? (
+                                        <>
+                                            {/* NEW + OLD PRICE IN ONE LINE */}
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    alignItems: "baseline",
+                                                    gap: 1,
+                                                }}
+                                            >
+                                                <Typography
+                                                    variant="h6"
+                                                    color="primary"
+                                                    sx={{ fontWeight: "bold" }}
+                                                >
+                                                    ${p.price}
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        textDecoration: "line-through",
+                                                        color: "text.secondary",
+                                                    }}
+                                                >
+                                                    ${oldPrice}
+                                                </Typography>
+                                            </Box>
+
+                                            {/* DISCOUNT PERCENT ON NEXT LINE */}
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    color: "error.main",
+                                                    fontWeight: "bold",
+                                                    mt: 0.5,
+                                                }}
+                                            >
+                                                -{p.discountPercentage}% OFF
+                                            </Typography>
+                                        </>
+                                    ) : (
+                                        <Typography
+                                            variant="h6"
+                                            color="primary"
+                                            sx={{ fontWeight: "bold" }}
+                                        >
+                                            ${p.price}
+                                        </Typography>
+                                    )}
+                                </Box>
+
                                 {/* Rating stars */}
-                                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                <Box sx={{ display: "flex", alignItems: "center" }}>
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <span
                                             key={i}
@@ -321,46 +375,6 @@ const CatalogPage = () => {
                                     </Typography>
                                 </Box>
                             </CardContent>
-
-                            {/* Price block */}
-                            <Box sx={{ px: 2, pb: 1 }}>
-                                {/* New + old price in one line */}
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <Typography
-                                        variant="h6"
-                                        color="primary"
-                                        sx={{ fontWeight: "bold" }}
-                                    >
-                                        ${p.price}
-                                    </Typography>
-
-                                    {oldPrice && (
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                textDecoration: "line-through",
-                                                color: "text.secondary",
-                                            }}
-                                        >
-                                            ${oldPrice}
-                                        </Typography>
-                                    )}
-                                </Box>
-
-                                {/* Discount percent */}
-                                {p.discountPercentage >= 10 && (
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            color: "error.main",
-                                            fontWeight: "bold",
-                                            mt: 0.5,
-                                        }}
-                                    >
-                                        -{p.discountPercentage}% OFF
-                                    </Typography>
-                                )}
-                            </Box>
 
                             {/* Add to cart button */}
                             <CardActions sx={{ p: 2 }}>
@@ -417,4 +431,3 @@ const CatalogPage = () => {
 };
 
 export default CatalogPage;
-
