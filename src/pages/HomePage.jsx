@@ -5,6 +5,7 @@ import {
     Button,
     Card,
     CardContent,
+    CardMedia,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
@@ -35,63 +36,185 @@ const HomePage = () => {
             .then((data) => setDiscounts(data.products));
     }, []);
 
-    // Reusable product card
-    const renderCard = (p) => (
-        <Card
-            key={p.id}
-            component={Link}
-            to={`/product/${p.id}`}
-            sx={{
-                textDecoration: "none",
-                color: "inherit",
-                borderRadius: 3,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                transition: "0.2s",
-                "&:hover": { transform: "translateY(-4px)" },
-            }}
-        >
-            {/* Image container */}
-            <Box
+    // Reusable product card — SAME STYLE AS RELATED PRODUCTS
+    const renderCard = (p) => {
+        const hasDiscount = p.discountPercentage >= 10;
+        const oldPrice = hasDiscount
+            ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
+            : null;
+
+        return (
+            <Card
+                key={p.id}
+                component={Link}
+                to={`/product/${p.id}`}
                 sx={{
-                    width: "100%",
-                    height: 180,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#f5f5f5",
+                    textDecoration: "none",
+                    color: "inherit",
                     borderRadius: 2,
-                    overflow: "hidden",
-                    p: 1,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                    transition: "0.2s",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                    "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+                    },
                 }}
             >
-                <img
-                    src={p.thumbnail}
+                {/* BADGES */}
+                {p.discountPercentage > 15 ? (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            backgroundColor: "orange",
+                            color: "#fff",
+                            px: 1.2,
+                            py: 0.3,
+                            borderRadius: 1,
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            zIndex: 2,
+                        }}
+                    >
+                        HOT DEAL
+                    </Box>
+                ) : hasDiscount ? (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            backgroundColor: "error.main",
+                            color: "#fff",
+                            px: 1.2,
+                            py: 0.3,
+                            borderRadius: 1,
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            zIndex: 2,
+                        }}
+                    >
+                        SALE
+                    </Box>
+                ) : null}
+
+                {/* IMAGE */}
+                <CardMedia
+                    component="img"
+                    image={p.thumbnail}
                     alt={p.title}
-                    style={{
-                        maxWidth: "100%",
-                        maxHeight: "100%",
+                    sx={{
+                        height: 180,
+                        width: "100%",
                         objectFit: "contain",
+                        backgroundColor: "#f5f5f5",
                     }}
                 />
-            </Box>
 
-            <CardContent>
-                <Typography variant="h6" noWrap>
-                    {p.title}
-                </Typography>
-
-                <Typography variant="body1" color="primary">
-                    ${p.price}
-                </Typography>
-
-                {p.discountPercentage > 0 && (
-                    <Typography variant="body2" color="error">
-                        -{p.discountPercentage}% off
+                <CardContent sx={{ flexGrow: 1 }}>
+                    {/* Title — 2 lines like Related products */}
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            lineHeight: 1.2,
+                            minHeight: "2.4em",
+                            mb: 1,
+                        }}
+                    >
+                        {p.title}
                     </Typography>
-                )}
-            </CardContent>
-        </Card>
-    );
+
+                    {/* PRICE BLOCK — EXACTLY LIKE RELATED PRODUCTS */}
+                    <Box sx={{ mb: 1 }}>
+                        {hasDiscount ? (
+                            <>
+                                {/* NEW + OLD PRICE IN ONE LINE */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "baseline",
+                                        gap: 1,
+                                    }}
+                                >
+                                    <Typography
+                                        variant="h6"
+                                        color="primary"
+                                        sx={{ fontWeight: "bold" }}
+                                    >
+                                        ${p.price}
+                                    </Typography>
+
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            textDecoration: "line-through",
+                                            color: "text.secondary",
+                                        }}
+                                    >
+                                        ${oldPrice}
+                                    </Typography>
+                                </Box>
+
+                                {/* DISCOUNT PERCENT */}
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: "error.main",
+                                        fontWeight: "bold",
+                                        mt: 0.5,
+                                    }}
+                                >
+                                    -{p.discountPercentage}% OFF
+                                </Typography>
+                            </>
+                        ) : (
+                            <Typography
+                                variant="h6"
+                                color="primary"
+                                sx={{ fontWeight: "bold" }}
+                            >
+                                ${p.price}
+                            </Typography>
+                        )}
+                    </Box>
+
+                    {/* ⭐ RATING — SAME AS RELATED PRODUCTS */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <span
+                                key={i}
+                                style={{
+                                    color:
+                                        i < Math.round(p.rating)
+                                            ? "#FFD700"
+                                            : "#ccc",
+                                    fontSize: "1.1rem",
+                                }}
+                            >
+                                ★
+                            </span>
+                        ))}
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ ml: 1 }}
+                        >
+                            {p.rating.toFixed(1)}
+                        </Typography>
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+    };
 
     return (
         <Box sx={{ p: 4 }}>
