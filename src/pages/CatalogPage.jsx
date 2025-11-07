@@ -21,8 +21,8 @@ import {
 } from "@mui/material";
 
 const CatalogPage = () => {
-    const navigate = useNavigate(); // navigation for full-card click
-    const dispatch = useDispatch(); // redux dispatch for cart
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // URL params
     const [searchParams, setSearchParams] = useSearchParams();
@@ -98,8 +98,8 @@ const CatalogPage = () => {
     // Apply search filter
     const filteredProducts = products
         ? products.filter((p) =>
-              p.title.toLowerCase().includes(search.toLowerCase())
-          )
+            p.title.toLowerCase().includes(search.toLowerCase())
+        )
         : [];
 
     // Sorting logic
@@ -114,6 +114,9 @@ const CatalogPage = () => {
         sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
     if (sort === "alpha_desc")
         sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+
+    // ⭐ NEW: Latest products — sort by ID (newest first)
+    if (sort === "id_desc") sortedProducts.sort((a, b) => b.id - a.id);
 
     // Pagination logic
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
@@ -186,10 +189,11 @@ const CatalogPage = () => {
                     onChange={(e) => handleSortChange(e.target.value)}
                 >
                     <MenuItem value="">Default</MenuItem>
-                    <MenuItem value="price_asc">Price: Low → High</MenuItem>
-                    <MenuItem value="price_desc">Price: High → Low</MenuItem>
                     <MenuItem value="rating_desc">Rating</MenuItem>
                     <MenuItem value="discount_desc">Discount</MenuItem>
+                    <MenuItem value="id_desc">Latest products</MenuItem>
+                    <MenuItem value="price_asc">Price: Low → High</MenuItem>
+                    <MenuItem value="price_desc">Price: High → Low</MenuItem>
                     <MenuItem value="alpha_asc">A → Z</MenuItem>
                     <MenuItem value="alpha_desc">Z → A</MenuItem>
                 </Select>
@@ -212,7 +216,7 @@ const CatalogPage = () => {
                     return (
                         <Card
                             key={p.id}
-                            onClick={() => navigate(`/product/${p.id}`)} // full-card click
+                            onClick={() => navigate(`/product/${p.id}`)}
                             sx={{
                                 cursor: "pointer",
                                 height: "100%",
@@ -296,11 +300,10 @@ const CatalogPage = () => {
                                     {p.title}
                                 </Typography>
 
-                                {/* PRICE BLOCK — SAME ORDER AS RELATED PRODUCTS */}
+                                {/* PRICE BLOCK */}
                                 <Box sx={{ mb: 1 }}>
                                     {hasDiscount ? (
                                         <>
-                                            {/* NEW + OLD PRICE IN ONE LINE */}
                                             <Box
                                                 sx={{
                                                     display: "flex",
@@ -327,7 +330,6 @@ const CatalogPage = () => {
                                                 </Typography>
                                             </Box>
 
-                                            {/* DISCOUNT PERCENT ON NEXT LINE */}
                                             <Typography
                                                 variant="body2"
                                                 sx={{
@@ -350,7 +352,7 @@ const CatalogPage = () => {
                                     )}
                                 </Box>
 
-                                {/* Rating stars */}
+                                {/* Rating */}
                                 <Box sx={{ display: "flex", alignItems: "center" }}>
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <span
@@ -376,14 +378,14 @@ const CatalogPage = () => {
                                 </Box>
                             </CardContent>
 
-                            {/* Add to cart button */}
+                            {/* Add to cart */}
                             <CardActions sx={{ p: 2 }}>
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     fullWidth
                                     onClick={(e) => {
-                                        e.stopPropagation(); // stop card click
+                                        e.stopPropagation();
 
                                         dispatch(
                                             addToCart({

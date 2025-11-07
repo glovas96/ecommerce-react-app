@@ -20,21 +20,54 @@ const HomePage = () => {
     const [discounts, setDiscounts] = useState([]);
 
     useEffect(() => {
-        // Fetch popular products
-        fetch("https://dummyjson.com/products?limit=4")
+        // Fetch POPULAR products — sorted by rating (best first)
+        fetch("https://dummyjson.com/products?sortBy=rating&order=desc&limit=4")
             .then((res) => res.json())
             .then((data) => setPopular(data.products));
 
-        // Fetch latest products
-        fetch("https://dummyjson.com/products?skip=4&limit=4")
+        // Fetch LATEST products — sorted by ID (newest first)
+        fetch("https://dummyjson.com/products?sortBy=id&order=desc&limit=4")
             .then((res) => res.json())
             .then((data) => setLatest(data.products));
 
-        // Fetch discount products (sorted by discount)
+        // Fetch DISCOUNT products — sorted by discount percentage
         fetch("https://dummyjson.com/products?sortBy=discountPercentage&order=desc&limit=4")
             .then((res) => res.json())
             .then((data) => setDiscounts(data.products));
     }, []);
+
+    // Special "See more" card — styled like product card
+    const SeeMoreCard = ({ to }) => (
+        <Card
+            component={Link}
+            to={to}
+            sx={{
+                textDecoration: "none",
+                color: "inherit",
+                borderRadius: 2,
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "0.2s",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+                },
+            }}
+        >
+            <Typography
+                variant="h6"
+                sx={{
+                    fontWeight: "bold",
+                    color: "primary.main",
+                }}
+            >
+                See more
+            </Typography>
+        </Card>
+    );
 
     // Reusable product card — SAME STYLE AS RELATED PRODUCTS
     const renderCard = (p) => {
@@ -267,6 +300,9 @@ const HomePage = () => {
                 }}
             >
                 {popular.map(renderCard)}
+
+                {/* "See more" card in same style */}
+                <SeeMoreCard to="/catalog?sort=rating_desc" />
             </Box>
 
             {/* Latest products */}
@@ -284,6 +320,9 @@ const HomePage = () => {
                 }}
             >
                 {latest.map(renderCard)}
+
+                {/* "See more" card */}
+                <SeeMoreCard to="/catalog?sort=id_desc" />
             </Box>
 
             {/* Discount deals */}
@@ -300,6 +339,9 @@ const HomePage = () => {
                 }}
             >
                 {discounts.map(renderCard)}
+
+                {/* "See more" card */}
+                <SeeMoreCard to="/catalog?sort=discount_desc" />
             </Box>
         </Box>
     );

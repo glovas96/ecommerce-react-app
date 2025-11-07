@@ -31,7 +31,7 @@ const ProductPage = () => {
     // Quantity selector
     const [quantity, setQuantity] = useState(1);
 
-    // Related products (4 items)
+    // Related products (limited to 4)
     const [related, setRelated] = useState([]);
 
     // Redux dispatch
@@ -48,12 +48,18 @@ const ProductPage = () => {
                 setProduct(data);
                 setSelectedImage(data.thumbnail);
 
-                // Load related products (API returns 4 items by default)
-                fetch(`https://dummyjson.com/products/category/${data.category}`)
+                // Load related products (same category)
+                // ⭐ NEW: limit=4 + sort by rating DESC (как в HomePage)
+                fetch(
+                    `https://dummyjson.com/products/category/${data.category}?sortBy=rating&order=desc&limit=5`
+                )
                     .then((res) => res.json())
                     .then((catData) => {
+                        // Remove current product
                         const filtered = catData.products.filter((p) => p.id !== data.id);
-                        setRelated(filtered);
+
+                        // ⭐ NEW: take only first 4 items
+                        setRelated(filtered.slice(0, 4));
                     });
             });
     }, [id]);
@@ -109,6 +115,39 @@ const ProductPage = () => {
     const oldPrice = hasDiscount
         ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
         : null;
+
+    // ⭐ NEW: See more card (same style as HomePage)
+    const SeeMoreCard = ({ category }) => (
+        <Card
+            component="a"
+            href={`/catalog?category=${category}`}
+            sx={{
+                textDecoration: "none",
+                color: "inherit",
+                borderRadius: 2,
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "0.2s",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+                },
+            }}
+        >
+            <Typography
+                variant="h6"
+                sx={{
+                    fontWeight: "bold",
+                    color: "primary.main",
+                }}
+            >
+                See more
+            </Typography>
+        </Card>
+    );
 
     return (
         <Box sx={{ p: 3 }}>
@@ -335,7 +374,7 @@ const ProductPage = () => {
                 </Box>
             </Box>
 
-            {/* Related products (4 items, styled like CatalogPage, no Add to cart) */}
+            {/* Related products */}
             {related.length > 0 && (
                 <Box sx={{ mt: 6 }}>
                     <Typography variant="h5" gutterBottom>
@@ -350,6 +389,7 @@ const ProductPage = () => {
                             mt: 2,
                         }}
                     >
+                        {/* Render related products */}
                         {related.map((p) => {
                             const hasDiscount = p.discountPercentage >= 10;
                             const oldPrice = hasDiscount
@@ -450,7 +490,6 @@ const ProductPage = () => {
                                         <Box sx={{ mb: 1 }}>
                                             {hasDiscount ? (
                                                 <>
-                                                    {/* New + old price in one line */}
                                                     <Box
                                                         sx={{
                                                             display: "flex",
@@ -477,7 +516,6 @@ const ProductPage = () => {
                                                         </Typography>
                                                     </Box>
 
-                                                    {/* Discount percent on next line */}
                                                     <Typography
                                                         variant="body2"
                                                         sx={{
@@ -490,16 +528,13 @@ const ProductPage = () => {
                                                     </Typography>
                                                 </>
                                             ) : (
-                                                <>
-                                                    {/* Only regular price */}
-                                                    <Typography
-                                                        variant="h6"
-                                                        color="primary"
-                                                        sx={{ fontWeight: "bold" }}
-                                                    >
-                                                        ${p.price}
-                                                    </Typography>
-                                                </>
+                                                <Typography
+                                                    variant="h6"
+                                                    color="primary"
+                                                    sx={{ fontWeight: "bold" }}
+                                                >
+                                                    ${p.price}
+                                                </Typography>
                                             )}
                                         </Box>
 
@@ -531,6 +566,9 @@ const ProductPage = () => {
                                 </Card>
                             );
                         })}
+
+                        {/* ⭐ NEW: See more card → leads to category in catalog */}
+                        <SeeMoreCard category={product.category} />
                     </Box>
                 </Box>
             )}
@@ -539,3 +577,4 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
