@@ -49,7 +49,6 @@ const ProductPage = () => {
                 setSelectedImage(data.thumbnail);
 
                 // Load related products (same category)
-                // ⭐ NEW: limit=4 + sort by rating DESC (как в HomePage)
                 fetch(
                     `https://dummyjson.com/products/category/${data.category}?sortBy=rating&order=desc&limit=5`
                 )
@@ -58,7 +57,7 @@ const ProductPage = () => {
                         // Remove current product
                         const filtered = catData.products.filter((p) => p.id !== data.id);
 
-                        // ⭐ NEW: take only first 4 items
+                        // take only first 4 items
                         setRelated(filtered.slice(0, 4));
                     });
             });
@@ -116,7 +115,7 @@ const ProductPage = () => {
         ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
         : null;
 
-    // ⭐ NEW: See more card (same style as HomePage)
+    // See more card (same style as HomePage)
     const SeeMoreCard = ({ category }) => (
         <Card
             component="a"
@@ -567,7 +566,7 @@ const ProductPage = () => {
                             );
                         })}
 
-                        {/* ⭐ NEW: See more card → leads to category in catalog */}
+                        {/* See more card → leads to category in catalog */}
                         <SeeMoreCard category={product.category} />
                     </Box>
                 </Box>

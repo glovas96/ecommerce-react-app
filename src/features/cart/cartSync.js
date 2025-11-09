@@ -16,9 +16,6 @@ export const syncCartToFirestore = (store) => {
         if (state === prevState) return;
         prevState = state;
 
-        // Skip saving empty cart (prevents overwriting Firestore)
-        if (state.length === 0) return;
-
         // Save updated cart
         await saveUserCart(user.uid, state);
     });

@@ -115,7 +115,7 @@ const CatalogPage = () => {
     if (sort === "alpha_desc")
         sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
 
-    // ⭐ NEW: Latest products — sort by ID (newest first)
+    // Latest products — sort by ID (newest first)
     if (sort === "id_desc") sortedProducts.sort((a, b) => b.id - a.id);
 
     // Pagination logic
