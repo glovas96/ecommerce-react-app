@@ -4,54 +4,55 @@ import {
     selectCartTotal,
 } from "../features/cart/selectors";
 import {
-    updateQuantity,
     removeFromCart,
+    updateQuantity,
+    clearCart,
 } from "../features/cart/cartSlice";
 
 import {
     Box,
     Typography,
-    Button,
     Card,
-    CardMedia,
     CardContent,
-    CardActions,
+    CardMedia,
     IconButton,
+    Button,
+    Divider,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import { Link } from "react-router-dom";
-
 const CartPage = () => {
-    // Read cart data from Redux
+    // Get cart items from Redux
     const items = useSelector(selectCartItems);
+
+    // Get total price
     const total = useSelector(selectCartTotal);
+
+    // Redux dispatch
     const dispatch = useDispatch();
 
-    // If cart is empty — show empty state
+    // Increase quantity
+    const increase = (id, qty) =>
+        dispatch(updateQuantity({ id, quantity: qty + 1 }));
+
+    // Decrease quantity (min 1)
+    const decrease = (id, qty) =>
+        dispatch(updateQuantity({ id, quantity: qty > 1 ? qty - 1 : 1 }));
+
+    // Empty cart state
     if (!items.length)
         return (
             <Box sx={{ p: 3 }}>
-                <Typography variant="h5" gutterBottom>
+                <Typography variant="h4" gutterBottom>
                     Your cart is empty
                 </Typography>
 
-                <Typography variant="body2" color="text.secondary">
-                    Add some products to see them here
+                <Typography color="text.secondary">
+                    Add products to your cart to see them here
                 </Typography>
-
-                {/* Button to go back to catalog */}
-                <Button
-                    component={Link}
-                    to="/catalog"
-                    variant="contained"
-                    sx={{ mt: 2 }}
-                >
-                    Go to catalog
-                </Button>
             </Box>
         );
 
@@ -59,19 +60,19 @@ const CartPage = () => {
         <Box sx={{ p: 3 }}>
             {/* Page title */}
             <Typography variant="h4" gutterBottom>
-                Cart
+                Shopping Cart
             </Typography>
 
-            {/* Cart items rendered as product cards */}
+            {/* Cart items list */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {items.map((item) => (
                     <Card
                         key={item.id}
                         sx={{
                             display: "flex",
-                            alignItems: "center",
-                            p: 1,
-                            gap: 2,
+                            p: 2,
+                            borderRadius: 2,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }}
                     >
                         {/* Product image */}
@@ -82,85 +83,83 @@ const CartPage = () => {
                             sx={{
                                 width: 120,
                                 height: 120,
-                                objectFit: "cover",
+                                objectFit: "contain",
+                                backgroundColor: "#f5f5f5",
                                 borderRadius: 1,
                             }}
                         />
 
                         {/* Product info */}
                         <CardContent sx={{ flex: 1 }}>
+                            {/* Title */}
                             <Typography variant="h6">{item.title}</Typography>
 
-                            <Typography variant="body2" color="text.secondary">
-                                Price: ${item.price}
+                            {/* Price per item */}
+                            <Typography color="text.secondary" sx={{ mb: 1 }}>
+                                ${item.price} each
                             </Typography>
 
-                            <Typography variant="body2" color="text.secondary">
-                                Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                            {/* Quantity selector */}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                }}
+                            >
+                                <IconButton onClick={() => decrease(item.id, item.quantity)}>
+                                    <RemoveIcon />
+                                </IconButton>
+
+                                <Typography variant="h6">{item.quantity}</Typography>
+
+                                <IconButton onClick={() => increase(item.id, item.quantity)}>
+                                    <AddIcon />
+                                </IconButton>
+                            </Box>
+
+                            {/* Subtotal */}
+                            <Typography sx={{ mt: 1 }}>
+                                Subtotal:{" "}
+                                <strong>
+                                    ${(item.price * item.quantity).toFixed(2)}
+                                </strong>
                             </Typography>
                         </CardContent>
 
-                        {/* Quantity controls */}
-                        <CardActions sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            {/* Decrease quantity */}
-                            <IconButton
-                                onClick={() =>
-                                    dispatch(
-                                        updateQuantity({
-                                            id: item.id,
-                                            quantity: Math.max(1, item.quantity - 1),
-                                        })
-                                    )
-                                }
-                            >
-                                <RemoveIcon />
-                            </IconButton>
-
-                            {/* Quantity display */}
-                            <Typography>{item.quantity}</Typography>
-
-                            {/* Increase quantity */}
-                            <IconButton
-                                onClick={() =>
-                                    dispatch(
-                                        updateQuantity({
-                                            id: item.id,
-                                            quantity: item.quantity + 1,
-                                        })
-                                    )
-                                }
-                            >
-                                <AddIcon />
-                            </IconButton>
-
-                            {/* Remove item */}
-                            <IconButton
-                                color="error"
-                                onClick={() => dispatch(removeFromCart(item.id))}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                        </CardActions>
+                        {/* Delete item */}
+                        <IconButton
+                            onClick={() => dispatch(removeFromCart(item.id))}
+                            sx={{ alignSelf: "center" }}
+                        >
+                            <DeleteIcon color="error" />
+                        </IconButton>
                     </Card>
                 ))}
             </Box>
 
+            <Divider sx={{ my: 3 }} />
+
             {/* Total price */}
-            <Typography variant="h5" sx={{ mt: 3 }}>
-                Total: {total}$
+            <Typography variant="h5" sx={{ mb: 2 }}>
+                Total: <strong>${total.toFixed(2)}</strong>
             </Typography>
 
-            {/* Checkout button */}
-            <Button
-                component={Link}
-                to="/checkout"
-                variant="contained"
-                color="primary"
-                size="large"
-                sx={{ mt: 2 }}
-            >
-                Proceed to checkout
-            </Button>
+            {/* Buttons */}
+            <Box sx={{ display: "flex", gap: 2 }}>
+                <Button variant="contained" size="large" href="/checkout">
+                    Proceed to checkout
+                </Button>
+
+                <Button
+                    variant="outlined"
+                    size="large"
+                    color="error"
+                    onClick={() => dispatch(clearCart())}
+                >
+                    Clear cart
+                </Button>
+            </Box>
         </Box>
     );
 };
