@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal } from "../features/cart/selectors";
 import { clearCart } from "../features/cart/cartSlice";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -25,27 +25,31 @@ import {
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// External Zod schema
 import { checkoutSchema } from "../validation/checkoutSchema";
 
 const CheckoutPage = () => {
-    // Redux state
-    const items = useSelector(selectCartItems);
-    const total = useSelector(selectCartTotal);
-
-    // Auth + navigation
-    const { user } = useAuth();
-    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const location = useLocation();
 
-    // Loading state
+    // Read Buy Now item (if exists)
+    const singleItem = location.state?.singleItem || null;
+
+    // Select items depending on checkout mode
+    const cartItems = useSelector(selectCartItems);
+    const cartTotal = useSelector(selectCartTotal);
+
+    // Final items for checkout
+    const items = singleItem ? [singleItem] : cartItems;
+
+    // Final total for checkout
+    const total = singleItem
+        ? singleItem.price * singleItem.quantity
+        : cartTotal;
+
     const [loading, setLoading] = useState(false);
-
-    // Payment method (UI only)
     const [payment, setPayment] = useState("card");
-
-    // Delivery option (UI only)
     const [delivery, setDelivery] = useState("standard");
 
     // React Hook Form
@@ -67,11 +71,12 @@ const CheckoutPage = () => {
 
         setLoading(true);
 
+        // Save order to Firestore
         await addDoc(collection(db, "orders"), {
             userId: user.uid,
             email: user.email,
-            items,
-            total,
+            items, // final items list
+            total, // final total
             paymentMethod: payment,
             deliveryOption: delivery,
             status: "processing",
@@ -84,12 +89,16 @@ const CheckoutPage = () => {
             },
         });
 
-        dispatch(clearCart());
+        // Clear cart only if this is NOT Buy Now
+        if (!singleItem) {
+            dispatch(clearCart());
+        }
+
         navigate("/orders");
     };
 
-    // If cart is empty
-    if (!items.length)
+    // Empty cart state (only if not Buy Now)
+    if (!singleItem && !cartItems.length)
         return (
             <Typography sx={{ p: 3 }} variant="h6">
                 Your cart is empty
@@ -98,7 +107,7 @@ const CheckoutPage = () => {
 
     return (
         <Box sx={{ p: 3, maxWidth: 700, mx: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
-            
+
             {/* Page title */}
             <Typography variant="h4" gutterBottom>
                 Place your order
@@ -257,11 +266,6 @@ const CheckoutPage = () => {
                         <Typography>{delivery === "express" ? "$5" : "Free"}</Typography>
                     </Box>
 
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography>Tax:</Typography>
-                        <Typography>$0</Typography>
-                    </Box>
-
                     <Divider sx={{ my: 2 }} />
 
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -272,7 +276,6 @@ const CheckoutPage = () => {
                     </Box>
                 </Box>
 
-                {/* Place order button */}
                 <Button
                     type="submit"
                     variant="contained"
@@ -287,10 +290,6 @@ const CheckoutPage = () => {
                         "Place your order"
                     )}
                 </Button>
-
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                    By placing your order, you agree to our Terms & Conditions.
-                </Typography>
             </Box>
         </Box>
     );

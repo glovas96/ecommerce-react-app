@@ -220,7 +220,7 @@ const HomePage = () => {
                         )}
                     </Box>
 
-                    {/* ⭐ RATING — SAME AS RELATED PRODUCTS */}
+                    {/* RATING — SAME AS RELATED PRODUCTS */}
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         {Array.from({ length: 5 }).map((_, i) => (
                             <span

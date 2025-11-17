@@ -192,7 +192,7 @@ const CatalogPage = () => {
                     <MenuItem value="rating_desc">Rating</MenuItem>
                     <MenuItem value="discount_desc">Discount</MenuItem>
                     <MenuItem value="id_desc">Latest products</MenuItem>
-                    <MenuItem value="price_asc">Price: Low → High</MenuItem>
+                                        <MenuItem value="price_asc">Price: Low → High</MenuItem>
                     <MenuItem value="price_desc">Price: High → Low</MenuItem>
                     <MenuItem value="alpha_asc">A → Z</MenuItem>
                     <MenuItem value="alpha_desc">Z → A</MenuItem>

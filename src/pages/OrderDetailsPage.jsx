@@ -142,7 +142,7 @@ const OrderDetailsPage = () => {
 
             {/* Total */}
             <Typography variant="h5">
-                Total: <strong>{order.total}$</strong>
+                Total: <strong>{order.total}</strong>
             </Typography>
         </Box>
     );
