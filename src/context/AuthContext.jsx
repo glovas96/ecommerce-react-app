@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useAuthListener } from "../hooks/useAuthListener";
 import { useDispatch } from "react-redux";
 import { setCart } from "../features/cart/cartSlice";
@@ -10,11 +10,20 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const value = useAuthListener();
     const dispatch = useDispatch();
+    const [cartSyncing, setCartSyncing] = useState(false);
+    const [cartReady, setCartReady] = useState(false);
 
     useEffect(() => {
         const syncCart = async () => {
             const { user } = value;
-            if (!user) return; // No user → guest mode
+
+            if (!user) {
+                setCartSyncing(false);
+                setCartReady(true);
+                return;
+            }
+
+            setCartSyncing(true);
 
             // Delay to ensure Firestore returns fresh data
             await new Promise((res) => setTimeout(res, 300));
@@ -36,16 +45,18 @@ export const AuthProvider = ({ children }) => {
 
             // Clear guest cart after sync
             localStorage.removeItem("cart");
+
+            setCartSyncing(false);
+            setCartReady(true);
         };
 
-        // Run sync only when auth is ready and user exists
-        if (!value.loading && value.user) {
+        if (!value.loading) {
             syncCart();
         }
-    }, [value.user, value.loading]);
+    }, [value.loading, value.user]);
 
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider value={{ ...value, cartSyncing, cartReady }}>
             {children}
         </AuthContext.Provider>
     );

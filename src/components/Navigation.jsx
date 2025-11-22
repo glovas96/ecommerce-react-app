@@ -1,4 +1,5 @@
-import { AppBar, Toolbar, Typography, Button, Box, Badge } from "@mui/material";
+import { useState, useEffect } from "react";
+import { AppBar, Toolbar, Typography, Button, Box, Badge, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,18 +9,28 @@ import { auth } from "../firebase/config";
 import { setCart } from "../features/cart/cartSlice";
 
 const Navigation = () => {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const items = useSelector(selectCartItems);
     const dispatch = useDispatch();
 
     // Count total items in cart
     const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
-    // Handle logout: clear Redux + localStorage + Firebase session
+    const [stableUser, setStableUser] = useState(null);
+
+    useEffect(() => {
+        if (user) {
+            setStableUser(user);
+        }
+    }, [user]);
+
+    const displayUser = user || stableUser;
+
+    // Handle logout: first sign out, then clear local cart
     const handleLogout = async () => {
+        await signOut(auth); // Firebase logout
         dispatch(setCart([])); // Reset Redux cart
         localStorage.removeItem("cart"); // Clear guest cart
-        await signOut(auth); // Firebase logout
     };
 
     return (
@@ -51,34 +62,43 @@ const Navigation = () => {
                         </Badge>
                     </Button>
 
-                    {/* If user is NOT logged in */}
-                    {!user && (
-                        <>
-                            <Button color="inherit" component={Link} to="/login">
-                                Login
-                            </Button>
-                            <Button color="inherit" component={Link} to="/register">
-                                Register
-                            </Button>
-                        </>
+                    {loading && !displayUser && (
+                        <Box
+                            sx={{
+                                minWidth: 80,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <CircularProgress size={20} color="inherit" />
+                        </Box>
                     )}
 
-                    {/* If user IS logged in */}
-                    {user && (
+                    {displayUser && (
                         <>
-                            {/* Clickable user email → goes to orders */}
                             <Button
                                 component={Link}
                                 to="/orders"
                                 color="inherit"
                                 sx={{ textTransform: "none" }}
                             >
-                                {user.email}
+                                {displayUser.email}
                             </Button>
 
-                            {/* Logout */}
                             <Button color="inherit" onClick={handleLogout}>
                                 Logout
+                            </Button>
+                        </>
+                    )}
+
+                    {!loading && !displayUser && (
+                        <>
+                            <Button color="inherit" component={Link} to="/login">
+                                Login
+                            </Button>
+                            <Button color="inherit" component={Link} to="/register">
+                                Register
                             </Button>
                         </>
                     )}

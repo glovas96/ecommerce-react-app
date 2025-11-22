@@ -2,15 +2,17 @@
 export const mergeCarts = (guest, user) => {
     const map = new Map(); // store merged items by product ID
 
-    // Iterate through both carts
+    // Iterate through both carts.
     [...guest, ...user].forEach((item) => {
-        // If product not added yet — add it
-        if (!map.has(item.id)) {
+        const existing = map.get(item.id);
+
+        if (!existing) {
             map.set(item.id, { ...item });
-        }
-        // If exists — increase quantity
-        else {
-            map.get(item.id).quantity += item.quantity;
+        } else {
+            existing.quantity = Math.max(
+                existing.quantity ?? 0,
+                item.quantity ?? 0
+            );
         }
     });
 

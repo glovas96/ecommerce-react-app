@@ -3,7 +3,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal } from "../features/cart/selectors";
 import { clearCart } from "../features/cart/cartSlice";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import FullPageLoader from "../components/FullPageLoader";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -30,7 +31,7 @@ import { checkoutSchema } from "../validation/checkoutSchema";
 const CheckoutPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading: authLoading, cartSyncing, cartReady } = useAuth();
     const location = useLocation();
 
     // Read Buy Now item (if exists)
@@ -42,7 +43,6 @@ const CheckoutPage = () => {
 
     // Final items for checkout
     const items = singleItem ? [singleItem] : cartItems;
-
     // Final total for checkout
     const total = singleItem
         ? singleItem.price * singleItem.quantity
@@ -97,13 +97,16 @@ const CheckoutPage = () => {
         navigate("/orders");
     };
 
+    if (authLoading || !cartReady) {
+        return <FullPageLoader />;
+    }
+
     // Empty cart state (only if not Buy Now)
-    if (!singleItem && !cartItems.length)
-        return (
-            <Typography sx={{ p: 3 }} variant="h6">
-                Your cart is empty
-            </Typography>
-        );
+    const isCartEmpty = !singleItem && !cartItems.length;
+
+    if (isCartEmpty) {
+        return <Navigate to="/cart" replace />;
+    }
 
     return (
         <Box sx={{ p: 3, maxWidth: 700, mx: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
