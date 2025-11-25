@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button, Box, Badge, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -16,21 +15,14 @@ const Navigation = () => {
     // Count total items in cart
     const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
-    const [stableUser, setStableUser] = useState(null);
-
-    useEffect(() => {
-        if (user) {
-            setStableUser(user);
-        }
-    }, [user]);
-
-    const displayUser = user || stableUser;
+    const displayUser = user;
 
     // Handle logout: first sign out, then clear local cart
     const handleLogout = async () => {
         await signOut(auth); // Firebase logout
         dispatch(setCart([])); // Reset Redux cart
         localStorage.removeItem("cart"); // Clear guest cart
+
     };
 
     return (
