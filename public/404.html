@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <script>
+        // Save the current path
+        const redirectPath = window.location.pathname.replace(
+            "/ecommerce-react-app",
+            ""
+        );
+
+        // Redirect to the SPA entry point with the original path preserved
+        window.location.replace("/ecommerce-react-app/" + "#" + redirectPath);
+    </script>
+</head>
+
+<body></body>
+
+</html>

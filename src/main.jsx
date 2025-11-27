@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")).render(
         {/* Provide Redux store to the entire app */}
         <Provider store={store}>
             {/* Enable client-side routing */}
-            <BrowserRouter>
+            <BrowserRouter basename="/ecommerce-react-app">
                 {/* Auth context */}
                 <AuthProvider>
                     <App />
