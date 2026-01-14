@@ -1,60 +1,61 @@
-import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/config";
-import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useSnackbar } from 'notistack';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import { Box, TextField, Button, Typography } from "@mui/material";
+import useAuthFormFields from '@/entities/auth/hooks/useAuthFormFields';
+import AuthForm from '@/features/auth/ui/AuthForm';
+import { auth } from '@/shared/firebase/config';
 
 const RegisterPage = () => {
-    const [email, setEmail] = useState(""); // email input
-    const [password, setPassword] = useState(""); // password input
-    const navigate = useNavigate();
+  const { email, password, setEmail, setPassword, reset } = useAuthFormFields();
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Redirect target after registration
+  const redirectTo = new URLSearchParams(location.search).get('redirectTo') || '/';
+  const { enqueueSnackbar } = useSnackbar();
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        await createUserWithEmailAndPassword(auth, email, password); // create user
-        navigate("/"); // redirect after register
-    };
+  // Validate password strength
+  const validatePassword = (value) => {
+    if (value.length < 6) return 'Password must be at least 6 characters.';
+    if (!/[A-Z]/.test(value)) return 'Include at least one uppercase letter.';
+    if (!/[0-9]/.test(value)) return 'Include at least one digit.';
+    return null;
+  };
 
-    return (
-        <Box
-            component="form"
-            onSubmit={handleRegister}
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                width: 300,
-                mx: "auto",
-                mt: 5,
-            }}
-        >
-            <Typography variant="h4" textAlign="center">
-                Register
-            </Typography>
+  // Submit registration form
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    const clientError = validatePassword(password);
+    if (clientError) {
+      enqueueSnackbar(clientError, { variant: 'error' });
+      return;
+    }
 
-            <TextField
-                type="email"
-                label="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                fullWidth
-            />
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      enqueueSnackbar('Account created, you are signed in.', { variant: 'success' });
+      navigate(redirectTo, { replace: true });
+      reset();
+    } catch (error) {
+      let message = 'Failed to register. Please try again.';
+      if (error?.code === 'auth/email-already-in-use') {
+        message = 'This email is already registered.';
+      }
+      enqueueSnackbar(message, { variant: 'error' });
+    }
+  };
 
-            <TextField
-                type="password"
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                fullWidth
-            />
-
-            <Button type="submit" variant="contained" size="large">
-                Create account
-            </Button>
-        </Box>
-    );
+  return (
+    <AuthForm
+      title="Register"
+      submitLabel="Create account"
+      email={email}
+      password={password}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={handleRegister}
+    />
+  );
 };
 
 export default RegisterPage;
-

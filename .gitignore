@@ -7,15 +7,29 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Node / Vite outputs
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+storybook-static/
+out/
+.vite/
+.cache/
+.eslintcache
 
-# Editor directories and files
+# Environment configs
+*.local
+*.env
+*.env.*
+*.env.local
+
+# Editor / OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.cursor/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -23,5 +37,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Vite cache
-.vite
+# Other temp files
+temp/

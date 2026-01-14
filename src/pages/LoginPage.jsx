@@ -1,60 +1,45 @@
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/config";
-import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useSnackbar } from 'notistack';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import { Box, TextField, Button, Typography } from "@mui/material";
+import useAuthFormFields from '@/entities/auth/hooks/useAuthFormFields';
+import AuthForm from '@/features/auth/ui/AuthForm';
+import { auth } from '@/shared/firebase/config';
 
 const LoginPage = () => {
-    const [email, setEmail] = useState(""); // email input
-    const [password, setPassword] = useState(""); // password input
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Destination after successful login
+  const redirectTo = new URLSearchParams(location.search).get('redirectTo') || '/';
+  const { enqueueSnackbar } = useSnackbar();
+  const { email, password, setEmail, setPassword, reset } = useAuthFormFields();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        await signInWithEmailAndPassword(auth, email, password); // login user
-        navigate("/"); // redirect after login
-    };
+  // Submit login credentials
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password); // login user
+      enqueueSnackbar('You have signed in successfully.', { variant: 'success' });
+      navigate(redirectTo, { replace: true }); // return after login
+      reset();
+    } catch {
+      enqueueSnackbar('Failed to sign in. Please check your credentials and try again.', {
+        variant: 'error',
+      });
+    }
+  };
 
-    return (
-        <Box
-            component="form"
-            onSubmit={handleLogin}
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                width: 300,
-                mx: "auto",
-                mt: 5,
-            }}
-        >
-            <Typography variant="h4" textAlign="center">
-                Login
-            </Typography>
-
-            <TextField
-                type="email"
-                label="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                fullWidth
-            />
-
-            <TextField
-                type="password"
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                fullWidth
-            />
-
-            <Button type="submit" variant="contained" size="large">
-                Sign in
-            </Button>
-        </Box>
-    );
+  return (
+    <AuthForm
+      title="Login"
+      submitLabel="Sign in"
+      email={email}
+      password={password}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={handleLogin}
+    />
+  );
 };
 
 export default LoginPage;
-

@@ -1,435 +1,120 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../features/cart/cartSlice";
-import { getProducts, getCategories } from "../api";
+import { Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-import {
-    Box,
-    Typography,
-    Button,
-    Skeleton,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    TextField,
-    Card,
-    CardContent,
-    CardMedia,
-    CardActions,
-} from "@mui/material";
+import { addToCart } from '@/entities/cart/slices/cartSlice';
+import { useCatalogFilters } from '@/entities/catalog/hooks/useCatalogFilters';
+import { ITEMS_PER_PAGE } from '@/entities/catalog/services/catalogService';
+import CatalogFilters from '@/features/catalog/ui/CatalogFilters';
+import CatalogPagination from '@/features/catalog/ui/CatalogPagination';
+import CatalogProducts from '@/features/catalog/ui/CatalogProducts';
+import { StyledPageContainer } from '@/shared/styles/StyledPageContainer';
 
 const CatalogPage = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const {
+    items: products,
+    categories = [],
+    total = 0,
+    isLoading,
+    page,
+    filters = {},
+    handlers,
+  } = useCatalogFilters();
 
-    // URL params
-    const [searchParams, setSearchParams] = useSearchParams();
+  const { setCategory, setSort, setSearch, setPage } = handlers;
+  const { category = '', sort = '', search = '' } = filters;
 
-    // Init state from URL
-    const initialCategory = searchParams.get("category") || "";
-    const initialSort = searchParams.get("sort") || "";
-    const initialSearch = searchParams.get("search") || "";
-    const initialPage = Number(searchParams.get("page")) || 1;
+  const [searchInput, setSearchInput] = useState(search);
 
-    // Local state
-    const [products, setProducts] = useState(null);
-    const [categories, setCategories] = useState([]);
-    const [category, setCategory] = useState(initialCategory);
-    const [sort, setSort] = useState(initialSort);
-    const [search, setSearch] = useState(initialSearch);
-    const [page, setPage] = useState(initialPage);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
-    const ITEMS_PER_PAGE = 20;
+  useEffect(() => {
+    if (searchInput === search) return;
+    const handler = setTimeout(() => {
+      if (searchInput !== search) {
+        setSearch(searchInput, { replace: true });
+      }
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchInput, search, setSearch]);
 
-    // Load categories on mount
-    useEffect(() => {
-        getCategories().then((cats) => setCategories(cats));
-    }, []);
+  // Normalize categories so the select can keep a matching slug value.
+  const normalizedCategoryValues = useMemo(() => {
+    if (!categories.length) return [];
+    return categories
+      .map((item) => {
+        if (!item) return '';
+        if (typeof item === 'string') return item;
+        return item?.slug ?? item?.name ?? '';
+      })
+      .filter(Boolean);
+  }, [categories]);
 
-    // Load products when category changes
-    useEffect(() => {
-        setProducts(null); // show skeleton
-        getProducts(category).then((prods) => setProducts(prods));
-    }, [category]);
+  const safeCategory = normalizedCategoryValues.includes(category) ? category : '';
+  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const showSkeletons = isLoading || !products;
 
-    // Update URL when category changes
-    const handleCategoryChange = (value) => {
-        setCategory(value);
-        setPage(1);
+  const getCategoryLabel = (category) => {
+    if (!category) return '';
+    if (typeof category === 'string') return category;
+    return category?.name ?? category?.slug ?? '';
+  };
 
-        const params = new URLSearchParams(searchParams);
-        value ? params.set("category", value) : params.delete("category");
-        params.set("page", 1);
-        setSearchParams(params);
-    };
+  const handleSearchSubmit = useCallback(() => {
+    setSearch(searchInput, { replace: true });
+  }, [searchInput, setSearch]);
 
-    // Update URL when sort changes
-    const handleSortChange = (value) => {
-        setSort(value);
-        setPage(1);
+  const handleAddToCart = useCallback(
+    (product) => {
+      dispatch(
+        addToCart({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          thumbnail: product.thumbnail,
+          quantity: 1,
+          discountPercentage: product.discountPercentage ?? 0,
+        }),
+      );
+    },
+    [dispatch],
+  );
 
-        const params = new URLSearchParams(searchParams);
-        value ? params.set("sort", value) : params.delete("sort");
-        params.set("page", 1);
-        setSearchParams(params);
-    };
+  return (
+    <StyledPageContainer>
+      <Typography variant="h4" gutterBottom>
+        Catalog
+      </Typography>
 
-    // Update URL when search changes
-    const handleSearchChange = (value) => {
-        setSearch(value);
-        setPage(1);
+      <CatalogFilters
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        onSearchSubmit={handleSearchSubmit}
+        categories={categories}
+        safeCategory={safeCategory}
+        onCategoryChange={setCategory}
+        sort={sort}
+        onSortChange={setSort}
+        getCategoryLabel={getCategoryLabel}
+      />
 
-        const params = new URLSearchParams(searchParams);
-        value ? params.set("search", value) : params.delete("search");
-        params.set("page", 1);
-        setSearchParams(params);
-    };
+      <CatalogProducts
+        products={products}
+        showSkeletons={showSkeletons}
+        onAddToCart={handleAddToCart}
+      />
 
-    // Update URL when page changes
-    const handlePageChange = (newPage) => {
-        setPage(newPage);
-        const params = new URLSearchParams(searchParams);
-        params.set("page", newPage);
-        setSearchParams(params);
-    };
-
-    // Apply search filter
-    const filteredProducts = products
-        ? products.filter((p) =>
-            p.title.toLowerCase().includes(search.toLowerCase())
-        )
-        : [];
-
-    // Sorting logic
-    const sortedProducts = [...filteredProducts];
-
-    if (sort === "price_asc") sortedProducts.sort((a, b) => a.price - b.price);
-    if (sort === "price_desc") sortedProducts.sort((a, b) => b.price - a.price);
-    if (sort === "rating_desc") sortedProducts.sort((a, b) => b.rating - a.rating);
-    if (sort === "discount_desc")
-        sortedProducts.sort((a, b) => b.discountPercentage - a.discountPercentage);
-    if (sort === "alpha_asc")
-        sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === "alpha_desc")
-        sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
-
-    // Latest products — sort by ID (newest first)
-    if (sort === "id_desc") sortedProducts.sort((a, b) => b.id - a.id);
-
-    // Pagination logic
-    const startIndex = (page - 1) * ITEMS_PER_PAGE;
-    const paginatedProducts = sortedProducts.slice(
-        startIndex,
-        startIndex + ITEMS_PER_PAGE
-    );
-
-    const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
-
-    // Show skeleton while loading
-    if (!products)
-        return (
-            <Box sx={{ p: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    Catalog
-                </Typography>
-
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <Skeleton
-                        key={i}
-                        variant="rectangular"
-                        width="100%"
-                        height={200}
-                        sx={{ my: 2 }}
-                    />
-                ))}
-            </Box>
-        );
-
-    return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom>
-                Catalog
-            </Typography>
-
-            {/* Search input */}
-            <TextField
-                fullWidth
-                label="Search"
-                value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                sx={{ mb: 3 }}
-            />
-
-            {/* Category selector */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                    value={category}
-                    label="Category"
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                >
-                    <MenuItem value="">All categories</MenuItem>
-
-                    {categories.map((c) => (
-                        <MenuItem key={c.slug} value={c.slug}>
-                            {c.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            {/* Sort selector */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Sort by</InputLabel>
-                <Select
-                    value={sort}
-                    label="Sort by"
-                    onChange={(e) => handleSortChange(e.target.value)}
-                >
-                    <MenuItem value="">Default</MenuItem>
-                    <MenuItem value="rating_desc">Rating</MenuItem>
-                    <MenuItem value="discount_desc">Discount</MenuItem>
-                    <MenuItem value="id_desc">Latest products</MenuItem>
-                                        <MenuItem value="price_asc">Price: Low → High</MenuItem>
-                    <MenuItem value="price_desc">Price: High → Low</MenuItem>
-                    <MenuItem value="alpha_asc">A → Z</MenuItem>
-                    <MenuItem value="alpha_desc">Z → A</MenuItem>
-                </Select>
-            </FormControl>
-
-            {/* Product cards grid */}
-            <Box
-                sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                    gap: 3,
-                }}
-            >
-                {paginatedProducts.map((p) => {
-                    const hasDiscount = p.discountPercentage >= 10;
-                    const oldPrice = hasDiscount
-                        ? (p.price / (1 - p.discountPercentage / 100)).toFixed(2)
-                        : null;
-
-                    return (
-                        <Card
-                            key={p.id}
-                            onClick={() => navigate(`/product/${p.id}`)}
-                            sx={{
-                                cursor: "pointer",
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                position: "relative",
-                                borderRadius: 2,
-                                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                                "&:hover": {
-                                    transform: "translateY(-5px)",
-                                    boxShadow: 4,
-                                },
-                            }}
-                        >
-                            {/* SALE / HOT DEAL badges */}
-                            {p.discountPercentage > 15 ? (
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        top: 8,
-                                        left: 8,
-                                        backgroundColor: "orange",
-                                        color: "#fff",
-                                        px: 1.2,
-                                        py: 0.3,
-                                        borderRadius: 1,
-                                        fontSize: "0.75rem",
-                                        fontWeight: "bold",
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    HOT DEAL
-                                </Box>
-                            ) : hasDiscount ? (
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        top: 8,
-                                        left: 8,
-                                        backgroundColor: "error.main",
-                                        color: "#fff",
-                                        px: 1.2,
-                                        py: 0.3,
-                                        borderRadius: 1,
-                                        fontSize: "0.75rem",
-                                        fontWeight: "bold",
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    SALE
-                                </Box>
-                            ) : null}
-
-                            {/* Product image */}
-                            <CardMedia
-                                component="img"
-                                image={p.thumbnail}
-                                alt={p.title}
-                                sx={{
-                                    height: 180,
-                                    width: "100%",
-                                    objectFit: "contain",
-                                    backgroundColor: "#f5f5f5",
-                                }}
-                            />
-
-                            <CardContent sx={{ flexGrow: 1 }}>
-                                {/* Title */}
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        display: "-webkit-box",
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: "vertical",
-                                        overflow: "hidden",
-                                        lineHeight: 1.2,
-                                        minHeight: "2.4em",
-                                        mb: 1,
-                                    }}
-                                >
-                                    {p.title}
-                                </Typography>
-
-                                {/* PRICE BLOCK */}
-                                <Box sx={{ mb: 1 }}>
-                                    {hasDiscount ? (
-                                        <>
-                                            <Box
-                                                sx={{
-                                                    display: "flex",
-                                                    alignItems: "baseline",
-                                                    gap: 1,
-                                                }}
-                                            >
-                                                <Typography
-                                                    variant="h6"
-                                                    color="primary"
-                                                    sx={{ fontWeight: "bold" }}
-                                                >
-                                                    ${p.price}
-                                                </Typography>
-
-                                                <Typography
-                                                    variant="body2"
-                                                    sx={{
-                                                        textDecoration: "line-through",
-                                                        color: "text.secondary",
-                                                    }}
-                                                >
-                                                    ${oldPrice}
-                                                </Typography>
-                                            </Box>
-
-                                            <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    color: "error.main",
-                                                    fontWeight: "bold",
-                                                    mt: 0.5,
-                                                }}
-                                            >
-                                                -{p.discountPercentage}% OFF
-                                            </Typography>
-                                        </>
-                                    ) : (
-                                        <Typography
-                                            variant="h6"
-                                            color="primary"
-                                            sx={{ fontWeight: "bold" }}
-                                        >
-                                            ${p.price}
-                                        </Typography>
-                                    )}
-                                </Box>
-
-                                {/* Rating */}
-                                <Box sx={{ display: "flex", alignItems: "center" }}>
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <span
-                                            key={i}
-                                            style={{
-                                                color:
-                                                    i < Math.round(p.rating)
-                                                        ? "#FFD700"
-                                                        : "#ccc",
-                                                fontSize: "1.1rem",
-                                            }}
-                                        >
-                                            ★
-                                        </span>
-                                    ))}
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                        sx={{ ml: 1 }}
-                                    >
-                                        {p.rating.toFixed(1)}
-                                    </Typography>
-                                </Box>
-                            </CardContent>
-
-                            {/* Add to cart */}
-                            <CardActions sx={{ p: 2 }}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-
-                                        dispatch(
-                                            addToCart({
-                                                id: p.id,
-                                                title: p.title,
-                                                price: p.price,
-                                                thumbnail: p.thumbnail,
-                                                quantity: 1,
-                                            })
-                                        );
-                                    }}
-                                >
-                                    Add to cart
-                                </Button>
-                            </CardActions>
-                        </Card>
-                    );
-                })}
-            </Box>
-
-            {/* Pagination */}
-            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
-                <Button
-                    variant="outlined"
-                    disabled={page === 1}
-                    onClick={() => handlePageChange(page - 1)}
-                >
-                    Prev
-                </Button>
-
-                <Typography sx={{ alignSelf: "center" }}>
-                    Page {page} / {totalPages}
-                </Typography>
-
-                <Button
-                    variant="outlined"
-                    disabled={page === totalPages}
-                    onClick={() => handlePageChange(page + 1)}
-                >
-                    Next
-                </Button>
-            </Box>
-        </Box>
-    );
+      <CatalogPagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage(page - 1)}
+        onNext={() => setPage(page + 1)}
+      />
+    </StyledPageContainer>
+  );
 };
 
 export default CatalogPage;
