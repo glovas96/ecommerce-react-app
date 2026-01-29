@@ -10,5 +10,3 @@ export const StyledProductGrid = styled(Box, {
   gap: theme.spacing(3),
   marginTop: withMargin ? theme.spacing(2) : undefined,
 }));
-
-

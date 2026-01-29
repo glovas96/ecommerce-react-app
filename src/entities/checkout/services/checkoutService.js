@@ -1,20 +1,29 @@
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import {
+  addDoc as defaultAddDoc,
+  collection as defaultCollection,
+  serverTimestamp as defaultServerTimestamp,
+} from 'firebase/firestore';
 
-import { db } from '@/shared/firebase/config';
+import { db as defaultDb } from '@/shared/firebase/config';
 
-// Determine shipping cost based on delivery type
-const getShippingCost = (delivery = 'standard') => (delivery === 'express' ? 5 : 0);
+// Determine shipping cost for delivery options
+export const getShippingCost = (delivery = 'standard') => (delivery === 'express' ? 5 : 0);
 
-// Build checkout summary
-const buildSummary = (items, delivery = 'standard') => {
+// Build price breakdown for checkout
+export const buildSummary = (items, delivery = 'standard') => {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = getShippingCost(delivery);
   const tax = subtotal * 0.08;
   return { subtotal, shipping, tax, total: subtotal + shipping + tax };
 };
 
-// Build payload from form data
-const buildPayload = (items, formData, user) => {
+// Create payload sent to Firestore
+export const buildPayload = (
+  items,
+  formData,
+  user,
+  { timestampFn = defaultServerTimestamp } = {},
+) => {
   const summary = buildSummary(items, formData.delivery);
   return {
     userId: user?.uid ?? null,
@@ -34,15 +43,26 @@ const buildPayload = (items, formData, user) => {
     total: summary.total,
     discount: 0,
     status: 'processing',
-    createdAt: serverTimestamp(),
+    createdAt: timestampFn(),
   };
 };
 
+const defaultCheckoutDependencies = {
+  addDocFn: defaultAddDoc,
+  collectionFn: defaultCollection,
+  timestampFn: defaultServerTimestamp,
+  dbClient: defaultDb,
+};
+
 // Submit checkout and return outcome
-export const processCheckout = async (items, formData, user) => {
-  const payload = buildPayload(items, formData, user);
+export const processCheckout = async (items, formData, user, overrides = {}) => {
+  const { addDocFn, collectionFn, timestampFn, dbClient } = {
+    ...defaultCheckoutDependencies,
+    ...overrides,
+  };
+  const payload = buildPayload(items, formData, user, { timestampFn });
   try {
-    const docRef = await addDoc(collection(db, 'orders'), payload);
+    const docRef = await addDocFn(collectionFn(dbClient, 'orders'), payload);
     return {
       success: true,
       orderId: docRef.id,

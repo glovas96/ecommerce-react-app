@@ -1,4 +1,5 @@
 import { TextField, Button } from '@mui/material';
+import React from 'react';
 
 import { StyledFormContainer, StyledFormTitle } from '@/features/auth/ui/authFormStyles';
 
@@ -14,31 +15,33 @@ const AuthForm = ({
   disabled = false,
   children,
 }) => (
-  <StyledFormContainer component="form" onSubmit={onSubmit}>
-    <StyledFormTitle variant="h4">{title}</StyledFormTitle>
+  <React.Fragment>
+    <StyledFormContainer component="form" onSubmit={onSubmit}>
+      <StyledFormTitle variant="h4">{title}</StyledFormTitle>
 
-    <TextField
-      type="email"
-      label="Email"
-      value={email}
-      onChange={(e) => onEmailChange(e.target.value)}
-      fullWidth
-    />
+      <TextField
+        type="email"
+        label="Email"
+        value={email}
+        onChange={(e) => onEmailChange(e.target.value)}
+        fullWidth
+      />
 
-    <TextField
-      type="password"
-      label="Password"
-      value={password}
-      onChange={(e) => onPasswordChange(e.target.value)}
-      fullWidth
-    />
+      <TextField
+        type="password"
+        label="Password"
+        value={password}
+        onChange={(e) => onPasswordChange(e.target.value)}
+        fullWidth
+      />
 
-    {children}
+      {children}
 
-    <Button type="submit" variant="contained" size="large" disabled={disabled}>
-      {submitLabel}
-    </Button>
-  </StyledFormContainer>
+      <Button type="submit" variant="contained" size="large" disabled={disabled}>
+        {submitLabel}
+      </Button>
+    </StyledFormContainer>
+  </React.Fragment>
 );
 
 export default AuthForm;

@@ -1,3 +1,5 @@
+import React from 'react';
+
 import {
   StyledThumbnailColumn,
   StyledThumbnailPreview,
@@ -22,7 +24,7 @@ const ProductGallery = ({
   const thumbnails = (images.length ? images : fallbackThumbnails).filter(Boolean);
 
   return (
-    <>
+    <React.Fragment>
       <StyledThumbnailColumn>
         {thumbnails.map((img, index) => (
           <StyledThumbnailPreview
@@ -39,7 +41,7 @@ const ProductGallery = ({
         {badgeVariant && <ProductBadge variant={badgeVariant} />}
         <StyledMainImage src={displayImage} alt={productTitle || 'product'} />
       </StyledImageWrapper>
-    </>
+    </React.Fragment>
   );
 };
 

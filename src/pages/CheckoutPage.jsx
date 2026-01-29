@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -98,59 +98,65 @@ const CheckoutPage = () => {
   };
 
   if (authLoading) {
-    return <FullPageLoader />;
+    return (
+      <React.Fragment>
+        <FullPageLoader />
+      </React.Fragment>
+    );
   }
 
   const handleFormSubmit = handleSubmit(onSubmit);
 
   return (
-    <StyledPageContainer>
-      <StyledCheckoutContent>
-        <Typography variant="h4" gutterBottom>
-          Place your order
-        </Typography>
+    <React.Fragment>
+      <StyledPageContainer>
+        <StyledCheckoutContent>
+          <Typography variant="h4" gutterBottom>
+            Place your order
+          </Typography>
 
-        <Box>
-          <CheckoutAddress
-            register={register}
-            errors={errors}
-            serverError={serverError}
-            onSubmit={handleFormSubmit}
-          />
-        </Box>
+          <Box>
+            <CheckoutAddress
+              register={register}
+              errors={errors}
+              serverError={serverError}
+              onSubmit={handleFormSubmit}
+            />
+          </Box>
 
-        <StyledSectionDivider />
+          <StyledSectionDivider />
 
-        <Box>
-          <PaymentOptions payment={payment} onChange={(e) => setPayment(e.target.value)} />
-        </Box>
+          <Box>
+            <PaymentOptions payment={payment} onChange={(e) => setPayment(e.target.value)} />
+          </Box>
 
-        <StyledSectionDivider />
+          <StyledSectionDivider />
 
-        <Box>
-          <DeliveryOptions delivery={delivery} onChange={(e) => setDelivery(e.target.value)} />
-        </Box>
+          <Box>
+            <DeliveryOptions delivery={delivery} onChange={(e) => setDelivery(e.target.value)} />
+          </Box>
 
-        <StyledSectionDivider />
+          <StyledSectionDivider />
 
-        <Box>
-          <ReviewItems items={items} />
-        </Box>
+          <Box>
+            <ReviewItems items={items} />
+          </Box>
 
-        <StyledSectionDivider />
+          <StyledSectionDivider />
 
-        <Box>
-          <OrderSummary
-            itemTotal={itemTotal}
-            shippingCost={shippingCost}
-            taxAmount={taxAmount}
-            summaryTotal={summaryTotal}
-            onPlaceOrder={handleFormSubmit}
-            loading={loading}
-          />
-        </Box>
-      </StyledCheckoutContent>
-    </StyledPageContainer>
+          <Box>
+            <OrderSummary
+              itemTotal={itemTotal}
+              shippingCost={shippingCost}
+              taxAmount={taxAmount}
+              summaryTotal={summaryTotal}
+              onPlaceOrder={handleFormSubmit}
+              loading={loading}
+            />
+          </Box>
+        </StyledCheckoutContent>
+      </StyledPageContainer>
+    </React.Fragment>
   );
 };
 

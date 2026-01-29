@@ -1,4 +1,5 @@
 import { InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import React from 'react';
 
 import { useOrdersList } from '@/entities/orders/hooks/useOrdersList';
 import OrdersEmptyState from '@/features/orders/ui/OrdersEmptyState';
@@ -23,57 +24,59 @@ const statusOptions = [
 ];
 
 const OrdersListPage = () => {
-  const {
-    orders,
-    statusFilter,
-    isLoading,
-    error,
-    setStatusFilter,
-  } = useOrdersList();
+  const { orders, statusFilter, isLoading, error, setStatusFilter } = useOrdersList();
 
   // Show loading state
   if (isLoading)
     return (
-      <StyledPageContainer>
-        <FullPageLoader />
-      </StyledPageContainer>
+      <React.Fragment>
+        <StyledPageContainer>
+          <FullPageLoader />
+        </StyledPageContainer>
+      </React.Fragment>
     );
 
   if (!orders.length) {
-    return <OrdersEmptyState />;
+    return (
+      <React.Fragment>
+        <OrdersEmptyState />
+      </React.Fragment>
+    );
   }
 
   return (
-    <StyledPageContainer>
-      <PageContent>
-        <HeaderTitle variant="h4">My Orders</HeaderTitle>
+    <React.Fragment>
+      <StyledPageContainer>
+        <PageContent>
+          <HeaderTitle variant="h4">My Orders</HeaderTitle>
 
-        <FiltersRow>
-          <StatusControl size="small">
-            <InputLabel id="status-filter-label">Status</InputLabel>
-            <Select
-              labelId="status-filter-label"
-              id="status-filter"
-              value={statusFilter}
-              label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {statusOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </StatusControl>
-        </FiltersRow>
+          <FiltersRow>
+            <StatusControl size="small">
+              <InputLabel id="status-filter-label">Status</InputLabel>
+              <Select
+                labelId="status-filter-label"
+                id="status-filter"
+                value={statusFilter}
+                label="Status"
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                {statusOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </StatusControl>
+          </FiltersRow>
 
-        {error ? (
-          <Typography color="error">Failed to load orders.</Typography>
-        ) : (
-          <OrdersList orders={orders} />
-        )}
-      </PageContent>
-    </StyledPageContainer>
+          {error ? (
+            <Typography color="error">Failed to load orders.</Typography>
+          ) : (
+            <OrdersList orders={orders} />
+          )}
+        </PageContent>
+      </StyledPageContainer>
+    </React.Fragment>
   );
 };
 

@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material';
+import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,8 @@ import {
 import RelatedProducts from '@/features/product/ui/RelatedProducts';
 import { StyledPageContainer } from '@/shared/styles/StyledPageContainer';
 import FullPageLoader from '@/shared/ui/FullPageLoader';
+
+const { Fragment } = React;
 
 const ProductPage = () => {
   const dispatch = useDispatch();
@@ -87,31 +90,33 @@ const ProductPage = () => {
     : '/catalog';
 
   return (
-    <StyledPageContainer>
-      <StyledProductLayout>
-        <ProductGallery
-          images={product.images ?? []}
-          selectedImage={selectedImage}
-          onSelect={setSelectedImage}
-          displayImage={displayImage}
-          discountPercentage={product.discountPercentage ?? 0}
-          productTitle={product.title}
-        />
-
-        <StyledInfoColumn>
-          <ProductInfo product={product} hasDiscount={hasDiscount} oldPrice={oldPrice} />
-          <ProductActions
-            quantity={quantity}
-            increase={increase}
-            decrease={decrease}
-            onAdd={handleAdd}
-            onBuyNow={handleBuyNow}
+    <Fragment>
+      <StyledPageContainer>
+        <StyledProductLayout>
+          <ProductGallery
+            images={product.images ?? []}
+            selectedImage={selectedImage}
+            onSelect={setSelectedImage}
+            displayImage={displayImage}
+            discountPercentage={product.discountPercentage ?? 0}
+            productTitle={product.title}
           />
-        </StyledInfoColumn>
-      </StyledProductLayout>
 
-      {related.length > 0 && <RelatedProducts related={related} categoryLink={categoryLink} />}
-    </StyledPageContainer>
+          <StyledInfoColumn>
+            <ProductInfo product={product} hasDiscount={hasDiscount} oldPrice={oldPrice} />
+            <ProductActions
+              quantity={quantity}
+              increase={increase}
+              decrease={decrease}
+              onAdd={handleAdd}
+              onBuyNow={handleBuyNow}
+            />
+          </StyledInfoColumn>
+        </StyledProductLayout>
+
+        {related.length > 0 && <RelatedProducts related={related} categoryLink={categoryLink} />}
+      </StyledPageContainer>
+    </Fragment>
   );
 };
 

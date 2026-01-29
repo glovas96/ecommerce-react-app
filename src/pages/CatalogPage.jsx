@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { addToCart } from '@/entities/cart/slices/cartSlice';
@@ -84,36 +84,38 @@ const CatalogPage = () => {
   );
 
   return (
-    <StyledPageContainer>
-      <Typography variant="h4" gutterBottom>
-        Catalog
-      </Typography>
+    <React.Fragment>
+      <StyledPageContainer>
+        <Typography variant="h4" gutterBottom>
+          Catalog
+        </Typography>
 
-      <CatalogFilters
-        searchInput={searchInput}
-        onSearchChange={setSearchInput}
-        onSearchSubmit={handleSearchSubmit}
-        categories={categories}
-        safeCategory={safeCategory}
-        onCategoryChange={setCategory}
-        sort={sort}
-        onSortChange={setSort}
-        getCategoryLabel={getCategoryLabel}
-      />
+        <CatalogFilters
+          searchInput={searchInput}
+          onSearchChange={setSearchInput}
+          onSearchSubmit={handleSearchSubmit}
+          categories={categories}
+          safeCategory={safeCategory}
+          onCategoryChange={setCategory}
+          sort={sort}
+          onSortChange={setSort}
+          getCategoryLabel={getCategoryLabel}
+        />
 
-      <CatalogProducts
-        products={products}
-        showSkeletons={showSkeletons}
-        onAddToCart={handleAddToCart}
-      />
+        <CatalogProducts
+          products={products}
+          showSkeletons={showSkeletons}
+          onAddToCart={handleAddToCart}
+        />
 
-      <CatalogPagination
-        page={page}
-        totalPages={totalPages}
-        onPrev={() => setPage(page - 1)}
-        onNext={() => setPage(page + 1)}
-      />
-    </StyledPageContainer>
+        <CatalogPagination
+          page={page}
+          totalPages={totalPages}
+          onPrev={() => setPage(page - 1)}
+          onNext={() => setPage(page + 1)}
+        />
+      </StyledPageContainer>
+    </React.Fragment>
   );
 };
 

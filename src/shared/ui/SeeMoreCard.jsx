@@ -1,5 +1,6 @@
 import { Card, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -25,9 +26,11 @@ const StyledTitle = styled(Typography)(({ theme }) => ({
 
 // Compact card reused for catalog call-to-action links
 const SeeMoreCard = ({ to }) => (
-  <StyledCard component={Link} to={to}>
-    <StyledTitle variant="h6">See more</StyledTitle>
-  </StyledCard>
+  <React.Fragment>
+    <StyledCard component={Link} to={to}>
+      <StyledTitle variant="h6">See more</StyledTitle>
+    </StyledCard>
+  </React.Fragment>
 );
 
 export default SeeMoreCard;

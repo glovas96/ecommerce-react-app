@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { StyledEmptyMessage, StyledProductsGrid } from '@/features/catalog/ui/catalogStyles';
 import HomeCardSkeleton from '@/features/home/ui/HomeCardSkeleton';
 import ProductCard from '@/widgets/product/ProductCard';
@@ -6,26 +8,32 @@ import ProductCard from '@/widgets/product/ProductCard';
 const CatalogProducts = ({ products = [], showSkeletons, onAddToCart }) => {
   if (showSkeletons) {
     return (
-      <StyledProductsGrid>
-        <HomeCardSkeleton rows={5} withSeeMore={false} />
-      </StyledProductsGrid>
+      <React.Fragment>
+        <StyledProductsGrid>
+          <HomeCardSkeleton rows={5} withSeeMore={false} />
+        </StyledProductsGrid>
+      </React.Fragment>
     );
   }
 
   if (!products.length) {
     return (
-      <StyledEmptyMessage color="text.secondary">
-        No products matched your filters.
-      </StyledEmptyMessage>
+      <React.Fragment>
+        <StyledEmptyMessage color="text.secondary">
+          No products matched your filters.
+        </StyledEmptyMessage>
+      </React.Fragment>
     );
   }
 
   return (
-    <StyledProductsGrid>
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-      ))}
-    </StyledProductsGrid>
+    <React.Fragment>
+      <StyledProductsGrid>
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+        ))}
+      </StyledProductsGrid>
+    </React.Fragment>
   );
 };
 

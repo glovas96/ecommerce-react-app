@@ -1,3 +1,4 @@
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/shared/hooks/useAuth';
@@ -8,14 +9,19 @@ const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return <FullPageLoader />;
+  if (loading)
+    return (
+      <React.Fragment>
+        <FullPageLoader />
+      </React.Fragment>
+    );
 
   if (!user) {
     const redirectTo = `${location.pathname}${location.search}`;
     return <Navigate to={`/login?redirectTo=${encodeURIComponent(redirectTo)}`} replace />;
   }
 
-  return children;
+  return <React.Fragment>{children}</React.Fragment>;
 };
 
 export default ProtectedRoute;

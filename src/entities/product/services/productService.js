@@ -1,7 +1,7 @@
 import { fetchProduct, fetchRelatedProducts } from '../api/productApi';
 
 // Derive non-discounted price for display
-const calculateOldPrice = (product) =>
+export const calculateOldPrice = (product) =>
   product.discountPercentage
     ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
     : null;

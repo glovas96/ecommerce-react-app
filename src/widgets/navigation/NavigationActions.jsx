@@ -1,4 +1,5 @@
 import { Badge, CircularProgress } from '@mui/material';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -24,49 +25,53 @@ const NavigationActions = () => {
   // Show fallback spinner while auth data loads
   if (loading && !user) {
     return (
-      <StyledLoaderBox>
-        <CircularProgress size={20} color="inherit" />
-      </StyledLoaderBox>
+      <React.Fragment>
+        <StyledLoaderBox>
+          <CircularProgress size={20} color="inherit" />
+        </StyledLoaderBox>
+      </React.Fragment>
     );
   }
 
   // Navigation action buttons
   return (
-    <StyledActionsContainer>
-      <StyledNavButton component={Link} to="/catalog">
-        Catalog
-      </StyledNavButton>
+    <React.Fragment>
+      <StyledActionsContainer>
+        <StyledNavButton component={Link} to="/catalog">
+          Catalog
+        </StyledNavButton>
 
-      <StyledNavButton component={Link} to="/cart">
-        <Badge badgeContent={cartCount} color="error">
-          Cart
-        </Badge>
-      </StyledNavButton>
+        <StyledNavButton component={Link} to="/cart">
+          <Badge badgeContent={cartCount} color="error">
+            Cart
+          </Badge>
+        </StyledNavButton>
 
-      {user ? (
-        <>
-          <StyledNavButton component={Link} to="/orders">
-            {user.email}
-          </StyledNavButton>
-          <StyledNavButton onClick={handleLogout}>Logout</StyledNavButton>
-        </>
-      ) : (
-        <>
-          <StyledNavButton
-            component={Link}
-            to={redirectTo ? `/login?redirectTo=${redirectTo}` : '/login'}
-          >
-            Login
-          </StyledNavButton>
-          <StyledNavButton
-            component={Link}
-            to={redirectTo ? `/register?redirectTo=${redirectTo}` : '/register'}
-          >
-            Register
-          </StyledNavButton>
-        </>
-      )}
-    </StyledActionsContainer>
+        {user ? (
+          <>
+            <StyledNavButton component={Link} to="/orders">
+              {user.email}
+            </StyledNavButton>
+            <StyledNavButton onClick={handleLogout}>Logout</StyledNavButton>
+          </>
+        ) : (
+          <>
+            <StyledNavButton
+              component={Link}
+              to={redirectTo ? `/login?redirectTo=${redirectTo}` : '/login'}
+            >
+              Login
+            </StyledNavButton>
+            <StyledNavButton
+              component={Link}
+              to={redirectTo ? `/register?redirectTo=${redirectTo}` : '/register'}
+            >
+              Register
+            </StyledNavButton>
+          </>
+        )}
+      </StyledActionsContainer>
+    </React.Fragment>
   );
 };
 

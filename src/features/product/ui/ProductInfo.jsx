@@ -1,4 +1,5 @@
 import { Typography, Rating } from '@mui/material';
+import React from 'react';
 
 import {
   StyledRatingRow,
@@ -14,7 +15,7 @@ import {
 
 // Displays product core details and specifications.
 const ProductInfo = ({ product, hasDiscount, oldPrice }) => (
-  <>
+  <React.Fragment>
     <Typography variant="h4" gutterBottom>
       {product.title}
     </Typography>
@@ -26,7 +27,7 @@ const ProductInfo = ({ product, hasDiscount, oldPrice }) => (
 
     <StyledPriceSection>
       {hasDiscount ? (
-        <>
+        <React.Fragment>
           <StyledCurrentPrice variant="h5" color="primary">
             ${product.price}
           </StyledCurrentPrice>
@@ -36,7 +37,7 @@ const ProductInfo = ({ product, hasDiscount, oldPrice }) => (
           <Typography variant="body2" color="error">
             -{product.discountPercentage}% discount
           </Typography>
-        </>
+        </React.Fragment>
       ) : (
         <StyledCurrentPrice variant="h5" color="primary">
           ${product.price}
@@ -62,7 +63,7 @@ const ProductInfo = ({ product, hasDiscount, oldPrice }) => (
         <strong>Warranty:</strong> 12‑month official warranty
       </StyledSpecItem>
     </StyledSpecSection>
-  </>
+  </React.Fragment>
 );
 
 export default ProductInfo;

@@ -1,5 +1,6 @@
 import { Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import React from 'react';
 
 const StyledProductBadge = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'badgevariant',
@@ -26,13 +27,15 @@ const StyledProductBadge = styled(Chip, {
 const ProductBadge = ({ variant = 'sale', label }) => {
   const isHot = variant === 'hot';
   return (
-    <StyledProductBadge
-      badgevariant={variant}
-      label={label ?? (isHot ? 'HOT DEAL' : 'SALE')}
-      size="small"
-      component="span"
-      clickable={false}
-    />
+    <React.Fragment>
+      <StyledProductBadge
+        badgevariant={variant}
+        label={label ?? (isHot ? 'HOT DEAL' : 'SALE')}
+        size="small"
+        component="span"
+        clickable={false}
+      />
+    </React.Fragment>
   );
 };
 

@@ -1,5 +1,6 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useSnackbar } from 'notistack';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import useAuthFormFields from '@/entities/auth/hooks/useAuthFormFields';
@@ -30,15 +31,17 @@ const LoginPage = () => {
   };
 
   return (
-    <AuthForm
-      title="Login"
-      submitLabel="Sign in"
-      email={email}
-      password={password}
-      onEmailChange={setEmail}
-      onPasswordChange={setPassword}
-      onSubmit={handleLogin}
-    />
+    <React.Fragment>
+      <AuthForm
+        title="Login"
+        submitLabel="Sign in"
+        email={email}
+        password={password}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleLogin}
+      />
+    </React.Fragment>
   );
 };
 
