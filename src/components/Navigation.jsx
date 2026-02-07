@@ -12,23 +12,20 @@ const Navigation = () => {
     const items = useSelector(selectCartItems);
     const dispatch = useDispatch();
 
+    // Count total items in cart
     const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
     // Handle logout: clear Redux + localStorage + Firebase session
     const handleLogout = async () => {
-        // Reset Redux cart
-        dispatch(setCart([]));
-
-        // Clear guest cart storage
-        localStorage.removeItem("cart");
-
-        // Sign out from Firebase Auth
-        await signOut(auth);
+        dispatch(setCart([])); // Reset Redux cart
+        localStorage.removeItem("cart"); // Clear guest cart
+        await signOut(auth); // Firebase logout
     };
 
     return (
         <AppBar position="static">
             <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+
                 {/* Logo */}
                 <Typography
                     variant="h6"
@@ -41,16 +38,20 @@ const Navigation = () => {
 
                 {/* Navigation buttons */}
                 <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+
+                    {/* Catalog */}
                     <Button color="inherit" component={Link} to="/catalog">
                         Catalog
                     </Button>
 
+                    {/* Cart with badge */}
                     <Button color="inherit" component={Link} to="/cart">
                         <Badge badgeContent={cartCount} color="error">
                             Cart
                         </Badge>
                     </Button>
 
+                    {/* If user is NOT logged in */}
                     {!user && (
                         <>
                             <Button color="inherit" component={Link} to="/login">
@@ -62,21 +63,20 @@ const Navigation = () => {
                         </>
                     )}
 
+                    {/* If user IS logged in */}
                     {user && (
                         <>
-                            {/* Display user email */}
-                            <Box
-                                sx={{
-                                    mx: 1,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    color: "white",
-                                }}
+                            {/* Clickable user email → goes to orders */}
+                            <Button
+                                component={Link}
+                                to="/orders"
+                                color="inherit"
+                                sx={{ textTransform: "none" }}
                             >
                                 {user.email}
-                            </Box>
+                            </Button>
 
-                            {/* Logout button */}
+                            {/* Logout */}
                             <Button color="inherit" onClick={handleLogout}>
                                 Logout
                             </Button>

@@ -8,7 +8,21 @@ import {
     removeFromCart,
 } from "../features/cart/cartSlice";
 
-import { Box, Typography, Button, TextField } from "@mui/material";
+import {
+    Box,
+    Typography,
+    Button,
+    Card,
+    CardMedia,
+    CardContent,
+    CardActions,
+    IconButton,
+} from "@mui/material";
+
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { Link } from "react-router-dom";
 
 const CartPage = () => {
@@ -48,49 +62,86 @@ const CartPage = () => {
                 Cart
             </Typography>
 
-            {/* Cart items list */}
-            <Box component="ul" sx={{ pl: 2 }}>
+            {/* Cart items rendered as product cards */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {items.map((item) => (
-                    <Box component="li" key={item.id} sx={{ mb: 2 }}>
-                        {/* Product title and price */}
-                        {item.title} — {item.price} $ ×
-
-                        {/* Quantity input */}
-                        <TextField
-                            type="number"
-                            size="small"
+                    <Card
+                        key={item.id}
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            p: 1,
+                            gap: 2,
+                        }}
+                    >
+                        {/* Product image */}
+                        <CardMedia
+                            component="img"
+                            image={item.thumbnail}
+                            alt={item.title}
                             sx={{
-                                width: 80,
-                                mx: 1,
-                                "& .MuiInputBase-root": {
-                                    height: 32,
-                                },
-                                "& input": {
-                                    padding: "0 8px",
-                                },
+                                width: 120,
+                                height: 120,
+                                objectFit: "cover",
+                                borderRadius: 1,
                             }}
-                            inputProps={{ min: 1 }}
-                            value={item.quantity}
-                            onChange={(e) =>
-                                dispatch(
-                                    updateQuantity({
-                                        id: item.id,
-                                        quantity: Number(e.target.value),
-                                    })
-                                )
-                            }
                         />
 
-                        {/* Remove item button */}
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => dispatch(removeFromCart(item.id))}
-                        >
-                            Remove
-                        </Button>
-                    </Box>
+                        {/* Product info */}
+                        <CardContent sx={{ flex: 1 }}>
+                            <Typography variant="h6">{item.title}</Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                                Price: ${item.price}
+                            </Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                                Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                            </Typography>
+                        </CardContent>
+
+                        {/* Quantity controls */}
+                        <CardActions sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            {/* Decrease quantity */}
+                            <IconButton
+                                onClick={() =>
+                                    dispatch(
+                                        updateQuantity({
+                                            id: item.id,
+                                            quantity: Math.max(1, item.quantity - 1),
+                                        })
+                                    )
+                                }
+                            >
+                                <RemoveIcon />
+                            </IconButton>
+
+                            {/* Quantity display */}
+                            <Typography>{item.quantity}</Typography>
+
+                            {/* Increase quantity */}
+                            <IconButton
+                                onClick={() =>
+                                    dispatch(
+                                        updateQuantity({
+                                            id: item.id,
+                                            quantity: item.quantity + 1,
+                                        })
+                                    )
+                                }
+                            >
+                                <AddIcon />
+                            </IconButton>
+
+                            {/* Remove item */}
+                            <IconButton
+                                color="error"
+                                onClick={() => dispatch(removeFromCart(item.id))}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </CardActions>
+                    </Card>
                 ))}
             </Box>
 
@@ -115,3 +166,4 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
