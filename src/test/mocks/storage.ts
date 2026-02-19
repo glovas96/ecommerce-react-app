@@ -1,0 +1,25 @@
+// Simple mock storage implementing Storage interface
+export const createMockStorage = (): Storage => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem(key: string) {
+      return store[key] ?? null;
+    },
+    setItem(key: string, value: string) {
+      store[key] = value;
+    },
+    removeItem(key: string) {
+      delete store[key];
+    },
+    clear() {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key(index: number) {
+      return Object.keys(store)[index] ?? null;
+    },
+  };
+};
